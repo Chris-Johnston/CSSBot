@@ -1,5 +1,8 @@
 # CSSBot
 
+Master: [![Build status](https://ci.appveyor.com/api/projects/status/b948an39c0hv2b5t/branch/master?svg=true)](https://ci.appveyor.com/project/Chris-Johnston/cssbot/branch/master)
+Current: [![Build status](https://ci.appveyor.com/api/projects/status/b948an39c0hv2b5t?svg=true)](https://ci.appveyor.com/project/Chris-Johnston/cssbot)
+
 A bot made for the CSS Discord server.
 
 ## Installation and Usage
