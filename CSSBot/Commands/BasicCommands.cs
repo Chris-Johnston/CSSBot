@@ -40,7 +40,8 @@ namespace CSSBot.Commands
         [Alias("GitHub")]
         public async Task About()
         {
-            await ReplyAsync("todo");
+            string txt = string.Format("🤔 CSSBot 🤔\nGitHub: https://github.com/Chris-Johnston/CSSBot");
+            await ReplyAsync(txt);
         }
 
     }
