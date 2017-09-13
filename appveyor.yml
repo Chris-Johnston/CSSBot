@@ -1,11 +1,13 @@
 version: 1.0.{build}
 image: Previous Visual Studio 2017
-init:
+configuration: Release
+platform: Any CPU
+before_build:
 - cmd: >-
     nuget sources add -name DiscordNet -Source https://www.myget.org/F/discord-net/api/v3/index.json
 
-
     dotnet restore
 build:
+  project: CSSBot.sln
   verbosity: minimal
 test: off
