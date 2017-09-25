@@ -4,7 +4,8 @@ using System.Text;
 
 namespace CSSBot.Reminders
 {
-    class ReminderService
+    public class ReminderService
     {
+
     }
 }
