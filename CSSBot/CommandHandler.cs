@@ -14,7 +14,6 @@ namespace CSSBot
         private CommandService commands;
         private DiscordSocketClient m_client;
 
-        private IServiceCollection _serviceCollection;
 
         /// <summary>
         /// This function goes through all of our commands in the assembly and adds
@@ -23,18 +22,14 @@ namespace CSSBot
         /// </summary>
         /// <param name="_client"></param>
         /// <returns></returns>
-        public async Task Install(DiscordSocketClient _client)
+        public async Task Install(DiscordSocketClient _client, IServiceCollection _serviceCollection)
         {
-            // dependency injection
-            _serviceCollection = new ServiceCollection();
-
             m_client = _client;
 
             commands = new CommandService();
             commands.Log += Bot.Log;
 
-            // add singletons to our service collection
-            _serviceCollection.AddSingleton(_client);
+            // add our command service to the service collection
             _serviceCollection.AddSingleton(commands);
 
             await commands.AddModulesAsync(Assembly.GetEntryAssembly());
