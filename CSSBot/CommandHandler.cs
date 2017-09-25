@@ -1,5 +1,6 @@
 ﻿using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -13,6 +14,8 @@ namespace CSSBot
         private CommandService commands;
         private DiscordSocketClient m_client;
 
+        private IServiceCollection _serviceCollection;
+
         /// <summary>
         /// This function goes through all of our commands in the assembly and adds
         /// them to the command service
@@ -22,10 +25,17 @@ namespace CSSBot
         /// <returns></returns>
         public async Task Install(DiscordSocketClient _client)
         {
+            // dependency injection
+            _serviceCollection = new ServiceCollection();
+
             m_client = _client;
 
             commands = new CommandService();
             commands.Log += Bot.Log;
+
+            // add singletons to our service collection
+            _serviceCollection.AddSingleton(_client);
+            _serviceCollection.AddSingleton(commands);
 
             await commands.AddModulesAsync(Assembly.GetEntryAssembly());
 
