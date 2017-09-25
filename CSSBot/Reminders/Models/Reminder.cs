@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml.Serialization;
 
-namespace CSSBot.Reminders.Models
+namespace CSSBot.Reminders
 {
     /// <summary>
     /// Represents a reminder, which will be saved/loaded from a file
     /// Need to use a file so that reminders aren't lost when bot restarts
     /// </summary>
-    [XmlRoot("Reminder")]
     public class Reminder
     {
         // the guild that created this reminder

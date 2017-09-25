@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using CSSBot.Reminders;
 
 namespace CSSBot
 {
@@ -12,6 +13,8 @@ namespace CSSBot
     {
         private DiscordSocketClient m_client;
         private CommandHandler m_handler;
+
+        private ReminderService m_ReminderService;
 
         private IServiceCollection m_serviceCollection;
 
@@ -30,6 +33,10 @@ namespace CSSBot
 
             // add client as a singleton to service collection
             m_serviceCollection.AddSingleton(m_client);
+
+            // add our reminder service
+            m_ReminderService = new ReminderService(m_client);
+            m_serviceCollection.AddSingleton(m_ReminderService);
 
             // set up our commands
             m_handler = new CommandHandler();
