@@ -37,7 +37,7 @@ namespace CSSBot.Commands
         /// </summary>
         /// <returns></returns>
         [Command("Echo"), Summary("A simple echo command.")]
-        public async Task Echo([Name("Text"), Summary("The text to echo back.")] string text)
+        public async Task Echo([Name("Text"), Summary("The text to echo back."), Remainder] string text)
         {
             await ReplyAsync(Context.User.Mention + " : " + text);
         }
