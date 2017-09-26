@@ -32,12 +32,10 @@ namespace CSSBot.Reminders
         public DateTime ReminderTime { get; set; }
 
         // which reminder time options were set upon creation
+        // each bit is set to 1 if it still needs to be set
+        // and to 0 when it has already been done
         [XmlElement("ReminderTimeOption")]
         public ReminderTimeOption ReminderTimeOption { get; set; }
-
-        // which reminder time options have been elapsed (and messages sent)
-        [XmlElement("ReminderTimeStatus")]
-        public ReminderTimeOption ReminderTimeStatus { get; set; }
 
         // who is this reminder for
         [XmlElement("ReminderType")]

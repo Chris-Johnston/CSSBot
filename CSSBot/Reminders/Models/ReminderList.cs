@@ -10,5 +10,10 @@ namespace CSSBot.Reminders
     {
         [XmlElement("Reminders")]
         public List<Reminder> Reminders { get; set; }
+
+        public ReminderList()
+        {
+            Reminders = new List<Reminder>();
+        }
     }
 }
