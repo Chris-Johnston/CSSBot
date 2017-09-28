@@ -29,11 +29,14 @@ namespace CSSBot
         {
             //todo implement ReminderTimeOption
             //todo implement ReminderType
-            _reminderService.AddReminder(Context.Guild.Id, Context.Channel.Id, Context.User.Id,
+            var added = _reminderService.AddReminder(Context.Guild.Id, Context.Channel.Id, Context.User.Id,
                 ReminderText, reminderTime);
 
-            string replyText = string.Format("Ok {0}! I've created a reminder for `{1:g}`.", Context.User.Mention, reminderTime);
-            await ReplyAsync(replyText);
+            if (added != null)
+            {
+                string replyText = string.Format("Ok {0}! I've created a reminder for `{1:g}` with the ID # of {2}.", Context.User.Mention, reminderTime, added.ReminderId);
+                await ReplyAsync(replyText);
+            }
         }
 
         /// <summary>
@@ -76,7 +79,7 @@ namespace CSSBot
                     var channel = await Context.Guild.GetChannelAsync(x.TextChannelId);
                     var user = await Context.Guild.GetUserAsync(x.AuthorId);
 
-                    string descriptionText = string.Format("{0} {1}: {2}", channel.Name, user.Username ?? user.Nickname, x.ReminderText);
+                    string descriptionText = string.Format("{0} {1}: #{3} {2}", channel.Name, user.Username ?? user.Nickname, x.ReminderText, x.ReminderId);
 
                     builder.AddField(x.ReminderTime.ToString("g"), descriptionText, true);
                 });
@@ -117,7 +120,7 @@ namespace CSSBot
                 {
                     var user = await Context.Guild.GetUserAsync(x.AuthorId);
 
-                    string descriptionText = string.Format("{0}: {1}", user.Username ?? user.Nickname, x.ReminderText);
+                    string descriptionText = string.Format("{0}: #{2} {1}", user.Username ?? user.Nickname, x.ReminderText, x.ReminderId);
 
                     builder.AddField(x.ReminderTime.ToString("g"), descriptionText, true);
                 });
@@ -156,7 +159,9 @@ namespace CSSBot
 
                 userReminders.ForEach(x =>
                {
-                   builder.AddField(x.ReminderTime.ToString("g"), x.ReminderText, true);
+                   string descriptionText = string.Format("#{0} {1}", x.ReminderId, x.ReminderText);
+
+                   builder.AddField(x.ReminderTime.ToString("g"), descriptionText, true);
                });
 
                 await ReplyAsync("", false, builder.Build());

@@ -57,7 +57,7 @@ namespace CSSBot.Reminders
         }
 
         // add a reminder
-        public void AddReminder(ulong guildId, ulong channelId, ulong authorId, string text, DateTime time,
+        public Reminder AddReminder(ulong guildId, ulong channelId, ulong authorId, string text, DateTime time,
             ReminderTimeOption timeOption = ReminderTimeOption.ThirtyMinuteWarning | ReminderTimeOption.OnReminderExpire, 
             ReminderType type = ReminderType.Author)
         {
@@ -65,8 +65,10 @@ namespace CSSBot.Reminders
             {
                 if(m_Reminders.Reminders != null)
                 {
+                    m_Reminders.ReminderCounter++;
+
                     // the date given has already passed
-                    if (DateTime.Now.CompareTo(time) > 0) return;
+                    if (DateTime.Now.CompareTo(time) > 0) return null;
 
                     // create a new reminder
                     Reminder n = new Reminder()
@@ -77,7 +79,8 @@ namespace CSSBot.Reminders
                         ReminderText = text,
                         ReminderTime = time,
                         ReminderTimeOption = timeOption,
-                        ReminderType = type
+                        ReminderType = type,
+                        ReminderId = m_Reminders.ReminderCounter
                     };
 
                     // check reminder time options
@@ -103,8 +106,13 @@ namespace CSSBot.Reminders
                     // and check that the time options specified haven't passed already
 
                     m_Reminders.Reminders.Add(n);
+
+                    SaveReminders();
+
+                    return n;
                 }
             }
+            return null;
         }
 
         private DateTime AdjustDateTimeFromOption(DateTime time, ReminderTimeOption option)

@@ -8,6 +8,9 @@ namespace CSSBot.Reminders
     [XmlRoot("ReminderList")]
     public class ReminderList
     {
+        [XmlElement("ReminderCounter")]
+        public int ReminderCounter { get; set; }
+
         [XmlElement("Reminders")]
         public List<Reminder> Reminders { get; set; }
 

@@ -11,6 +11,10 @@ namespace CSSBot.Reminders
     /// </summary>
     public class Reminder
     {
+        // the unique id of this reminder
+        [XmlElement("ReminderId")]
+        public int ReminderId { get; set; }
+
         // the guild that created this reminder
         [XmlElement("GuildId")]
         public ulong GuildId { get; set; }
