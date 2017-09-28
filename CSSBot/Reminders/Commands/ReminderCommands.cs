@@ -50,18 +50,80 @@ namespace CSSBot
         /// Lists all of the guild reminders
         /// </summary>
         /// <returns></returns>
+        [Command("GuildReminders")]
+        [Alias("ServerReminders", "ListServer", "ListGuild")]
+        [RequireContext(ContextType.Guild)]
+        [Summary("Gets all the reminders created for this server.")]
         public async Task ListGuildReminders()
         {
+            // match all by AuthorId in this guild
+            var guildReminders = _reminderService.ActiveReminders.FindAll(x => x.GuildId == Context.Guild.Id);
 
+            if (guildReminders.Count == 0)
+            {
+                await ReplyAsync("There are no active reminders for this server.");
+            }
+            else
+            {
+                var builder = new EmbedBuilder();
+                builder.WithAuthor(Context.Client.CurrentUser);
+                builder.WithColor(new Color(255, 204, 77));
+
+                builder.WithTitle(string.Format("Reminders for {0}:", Context.Guild.Name));
+
+                guildReminders.ForEach(async x =>
+                {
+                    var channel = await Context.Guild.GetChannelAsync(x.TextChannelId);
+                    var user = await Context.Guild.GetUserAsync(x.AuthorId);
+
+                    string descriptionText = string.Format("{0} {1}: {2}", channel.Name, user.Username ?? user.Nickname, x.ReminderText);
+
+                    builder.AddField(x.ReminderTime.ToString("g"), descriptionText, true);
+                });
+
+                await ReplyAsync("", false, builder.Build());
+            }
         }
 
         /// <summary>
         /// Lists all of the channel reminders
         /// </summary>
         /// <returns></returns>
-        public async Task ListChannelReminders()
+        [Command("ChannelReminders")]
+        [Alias("Reminders", "ListChannel")]
+        [RequireContext(ContextType.Guild)]
+        [Summary("Gets all the reminders created for the current channel, or specified channel.")]
+        public async Task ListChannelReminders(IGuildChannel channel = null)
         {
+            if (channel == null)
+                channel = Context.Channel as IGuildChannel;
 
+            // match all by AuthorId in this guild
+            var channelReminders = _reminderService.ActiveReminders.FindAll(x => x.TextChannelId == channel.Id && x.GuildId == channel.GuildId);
+
+            if (channelReminders.Count == 0)
+            {
+                await ReplyAsync(string.Format("There are no active reminders for the channel {0}.", channel));
+            }
+            else
+            {
+                var builder = new EmbedBuilder();
+                builder.WithAuthor(Context.Client.CurrentUser);
+                builder.WithColor(new Color(255, 204, 77));
+
+                builder.WithTitle(string.Format("Reminders for {0}:", channel.Name));
+
+                channelReminders.ForEach(async x =>
+                {
+                    var user = await Context.Guild.GetUserAsync(x.AuthorId);
+
+                    string descriptionText = string.Format("{0}: {1}", user.Username ?? user.Nickname, x.ReminderText);
+
+                    builder.AddField(x.ReminderTime.ToString("g"), descriptionText, true);
+                });
+
+                await ReplyAsync("", false, builder.Build());
+            }
         }
 
         /// <summary>
@@ -94,7 +156,7 @@ namespace CSSBot
 
                 userReminders.ForEach(x =>
                {
-                   builder.AddField(x.ReminderTime.ToString("s"), x.ReminderText, true);
+                   builder.AddField(x.ReminderTime.ToString("g"), x.ReminderText, true);
                });
 
                 await ReplyAsync("", false, builder.Build());
