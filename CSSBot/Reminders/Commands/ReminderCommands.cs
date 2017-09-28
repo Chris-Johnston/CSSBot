@@ -25,7 +25,7 @@ namespace CSSBot
         /// </summary>
         /// <returns></returns>
         [Command("Add"), Alias("Create"), RequireContext(ContextType.Guild)]
-        public async Task AddReminder([Name("Time")]DateTime reminderTime, [Name("Reminder")]string ReminderText)
+        public async Task AddReminder([Name("Time")]DateTime reminderTime, [Name("Reminder"), Remainder()]string ReminderText)
         {
             //todo implement ReminderTimeOption
             //todo implement ReminderType
