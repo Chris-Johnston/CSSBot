@@ -25,5 +25,9 @@ namespace CSSBot.Reminders
 
         // 3 hours afterwards
         ThreeHoursOverdue =     0b1000000,
+
+        TenMinuteWarning =      0b10000000,
+
+        FiveMinuteWarning =     0b100000000
     }
 }

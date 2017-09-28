@@ -46,7 +46,7 @@ namespace CSSBot
         public async Task AddChannelReminder([Name("Time")]DateTime reminderTime, [Name("Reminder"), Remainder()]string ReminderText)
         {
             var added = _reminderService.AddReminder(Context.Guild.Id, Context.Channel.Id, Context.User.Id,
-                ReminderText, reminderTime, ReminderTimeOption.OnReminderExpire | ReminderTimeOption.ThirtyMinuteWarning, ReminderType.Channel);
+                ReminderText, reminderTime, ReminderTimeOption.OnReminderExpire | ReminderTimeOption.ThirtyMinuteWarning | ReminderTimeOption.FiveMinuteWarning, ReminderType.Channel);
 
             if (added != null)
             {
@@ -63,7 +63,7 @@ namespace CSSBot
         public async Task AddGuildReminder([Name("Time")]DateTime reminderTime, [Name("Reminder"), Remainder()]string ReminderText)
         {
             var added = _reminderService.AddReminder(Context.Guild.Id, Context.Channel.Id, Context.User.Id,
-                ReminderText, reminderTime, ReminderTimeOption.OnReminderExpire | ReminderTimeOption.ThirtyMinuteWarning, ReminderType.Guild);
+                ReminderText, reminderTime, ReminderTimeOption.OnReminderExpire | ReminderTimeOption.ThirtyMinuteWarning | ReminderTimeOption.FiveMinuteWarning, ReminderType.Guild);
 
             if (added != null)
             {

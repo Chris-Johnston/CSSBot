@@ -120,7 +120,7 @@ namespace CSSBot.Reminders
 
         // add a reminder
         public Reminder AddReminder(ulong guildId, ulong channelId, ulong authorId, string text, DateTime time,
-            ReminderTimeOption timeOption = ReminderTimeOption.ThirtyMinuteWarning | ReminderTimeOption.OnReminderExpire, 
+            ReminderTimeOption timeOption = ReminderTimeOption.ThirtyMinuteWarning | ReminderTimeOption.OnReminderExpire | ReminderTimeOption.FiveMinuteWarning, 
             ReminderType type = ReminderType.Author)
         {
             if(m_Reminders != null)
@@ -180,6 +180,10 @@ namespace CSSBot.Reminders
                     return time.AddHours(3);
                 case ReminderTimeOption.TwoHourWarning:
                     return time.AddHours(-2);
+                case ReminderTimeOption.TenMinuteWarning:
+                    return time.AddMinutes(-10);
+                case ReminderTimeOption.FiveMinuteWarning:
+                    return time.AddMinutes(-5);
             }
             return time;
         }
@@ -328,6 +332,10 @@ namespace CSSBot.Reminders
                     return "Three Hours Overdue";
                 case ReminderTimeOption.TwoHourWarning:
                     return "Two Hours Remaining";
+                case ReminderTimeOption.FiveMinuteWarning:
+                    return "Five Minutes Remaining";
+                case ReminderTimeOption.TenMinuteWarning:
+                    return "Ten Minutes Remaining";
             }
             return "Reminder";
         }
