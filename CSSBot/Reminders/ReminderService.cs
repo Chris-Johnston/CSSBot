@@ -275,13 +275,17 @@ namespace CSSBot.Reminders
                 description = string.Format("Reminder for {0:g}\n{2} remains.\n**Message**:\n{1}", r.ReminderTime, r.ReminderText, DateTime.Now.Subtract(r.ReminderTime));
             }
 
+            string mentionStr = "";
+
             // include the person we were supposed to ping
             if (r.ReminderType == ReminderType.Author && user != null)
-                description += "\n\n" + user.Mention;
+                mentionStr = user.Mention;
             else if (r.ReminderType == ReminderType.Channel)
-                description += "\n\n" + "@here";
+                mentionStr = "@here";
             else if (r.ReminderType == ReminderType.Guild)
-                description += "\n\n" + "@everyone";
+                mentionStr = "@everyone";
+
+            description += "\n\n" + mentionStr;
 
             embed.WithDescription(description);
 
@@ -298,7 +302,7 @@ namespace CSSBot.Reminders
             if (socketChannel == null) return;
 
             // send the message
-            await socketChannel.SendMessageAsync("", false, embed.Build());
+            await socketChannel.SendMessageAsync(mentionStr, false, embed.Build());
 
             //// and now set that bit true
             //r.ReminderTimeStatus |= option;
