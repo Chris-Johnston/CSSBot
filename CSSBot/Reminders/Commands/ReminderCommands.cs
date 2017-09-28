@@ -1,4 +1,5 @@
 ﻿using CSSBot.Reminders;
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
@@ -67,9 +68,37 @@ namespace CSSBot
         /// Lists all of the reminders authored by the given user (or Context.User)
         /// </summary>
         /// <returns></returns>
-        public async Task ListUserReminders()
+        [Command("UserReminders")]
+        [Alias("MyReminders", "ListUser")]
+        [RequireContext(ContextType.Guild)]
+        [Summary("Gets all the reminders authored by the specified user, or yourself if unspecified.")]
+        public async Task ListUserReminders(IGuildUser user = null)
         {
+            if (user == null)
+                user = Context.User as IGuildUser;
 
+            // match all by AuthorId in this guild
+            var userReminders = _reminderService.ActiveReminders.FindAll(x => x.AuthorId == user.Id && x.GuildId == user.GuildId);
+
+            if (userReminders.Count == 0)
+            {
+                await ReplyAsync(string.Format("There are no active reminders authored by {0}.", user.Mention));
+            }
+            else
+            {
+                var builder = new EmbedBuilder();
+                builder.WithAuthor(Context.Client.CurrentUser);
+                builder.WithColor(new Color(255, 204, 77));
+
+                builder.WithTitle(string.Format("Reminders for {0}:", user.Nickname ?? user.Username));
+
+                userReminders.ForEach(x =>
+               {
+                   builder.AddField(x.ReminderTime.ToString("s"), x.ReminderText, true);
+               });
+
+                await ReplyAsync("", false, builder.Build());
+            }
         }
 
     }

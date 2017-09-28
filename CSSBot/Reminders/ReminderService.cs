@@ -3,6 +3,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -20,6 +21,20 @@ namespace CSSBot.Reminders
         private Timer m_ReminderTimer;
 
         private readonly DiscordSocketClient m_client;
+
+        //should consider making this a read only list
+        public List<Reminder> ActiveReminders
+        {
+            get
+            {
+                if(m_Reminders != null && m_Reminders.Reminders != null)
+                {
+                    return new List<Reminder>(m_Reminders.Reminders);
+                }
+                // empty list
+                return new List<Reminder>();
+            }
+        }
 
         public ReminderService(DiscordSocketClient client)
         {
