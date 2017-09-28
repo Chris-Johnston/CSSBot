@@ -50,10 +50,42 @@ namespace CSSBot
         }
 
         /// <summary>
+        /// Gets a reminder by the given id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [Command("GetReminder", RunMode = RunMode.Async)]
+        [Alias("Get")]
+        [RequireContext(ContextType.Guild)]
+        [Summary("Gets a reminder for this server.")]
+        public async Task GetReminderById(int id)
+        {
+            var reminder = _reminderService.ActiveReminders.Find(x => x.GuildId == Context.Guild.Id && x.ReminderId == id);
+
+            if(reminder == null)
+            {
+                await ReplyAsync("I couldn't find any active reminders by the supplied ID.");
+            }
+            else
+            {
+                var builder = new EmbedBuilder();
+                builder.WithAuthor(Context.Client.CurrentUser);
+                builder.WithColor(new Color(255, 204, 77));
+
+                builder.WithTitle(string.Format("Reminder #{0}", reminder.ReminderId));
+
+                builder.AddField(reminder.ReminderTime.ToString("g"),
+                    string.Format("{0}\n\nRemaining alerts: {1}\nType: {2}", reminder.ReminderText, reminder.ReminderTimeOption, reminder.ReminderType));
+
+                await ReplyAsync("", false, builder.Build());
+            }
+        }
+
+        /// <summary>
         /// Lists all of the guild reminders
         /// </summary>
         /// <returns></returns>
-        [Command("GuildReminders")]
+        [Command("GuildReminders", RunMode = RunMode.Async)]
         [Alias("ServerReminders", "ListServer", "ListGuild")]
         [RequireContext(ContextType.Guild)]
         [Summary("Gets all the reminders created for this server.")]
@@ -92,7 +124,7 @@ namespace CSSBot
         /// Lists all of the channel reminders
         /// </summary>
         /// <returns></returns>
-        [Command("ChannelReminders")]
+        [Command("ChannelReminders", RunMode = RunMode.Async)]
         [Alias("Reminders", "ListChannel")]
         [RequireContext(ContextType.Guild)]
         [Summary("Gets all the reminders created for the current channel, or specified channel.")]
@@ -133,7 +165,7 @@ namespace CSSBot
         /// Lists all of the reminders authored by the given user (or Context.User)
         /// </summary>
         /// <returns></returns>
-        [Command("UserReminders")]
+        [Command("UserReminders", RunMode = RunMode.Async)]
         [Alias("MyReminders", "ListUser")]
         [RequireContext(ContextType.Guild)]
         [Summary("Gets all the reminders authored by the specified user, or yourself if unspecified.")]
