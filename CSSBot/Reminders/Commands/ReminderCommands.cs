@@ -43,9 +43,16 @@ namespace CSSBot
         [Command("AddChannel", RunMode = RunMode.Async)]
         [Alias("CreateChannel", "+Channel")]
         [RequireContext(ContextType.Guild)]
-        public async Task AddChannelReminder()
+        public async Task AddChannelReminder([Name("Time")]DateTime reminderTime, [Name("Reminder"), Remainder()]string ReminderText)
         {
+            var added = _reminderService.AddReminder(Context.Guild.Id, Context.Channel.Id, Context.User.Id,
+                ReminderText, reminderTime, ReminderTimeOption.OnReminderExpire | ReminderTimeOption.ThirtyMinuteWarning, ReminderType.Channel);
 
+            if (added != null)
+            {
+                string replyText = string.Format("Ok {0}! I've created a reminder for `{1:g}` with the ID # of {2}.", Context.User.Mention, reminderTime, added.ReminderId);
+                await ReplyAsync(replyText);
+            }
         }
 
         // add guild reminder
@@ -53,9 +60,16 @@ namespace CSSBot
         [Alias("CreateServer", "+Server", "AddGuild", "CreateGuild", "+Guild")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(ChannelPermission.ManageMessages)]
-        public async Task AddGuildReminder()
+        public async Task AddGuildReminder([Name("Time")]DateTime reminderTime, [Name("Reminder"), Remainder()]string ReminderText)
         {
+            var added = _reminderService.AddReminder(Context.Guild.Id, Context.Channel.Id, Context.User.Id,
+                ReminderText, reminderTime, ReminderTimeOption.OnReminderExpire | ReminderTimeOption.ThirtyMinuteWarning, ReminderType.Guild);
 
+            if (added != null)
+            {
+                string replyText = string.Format("Ok {0}! I've created a reminder for `{1:g}` with the ID # of {2}.", Context.User.Mention, reminderTime, added.ReminderId);
+                await ReplyAsync(replyText);
+            }
         }
 
         [Command("UpdateFrequency", RunMode = RunMode.Async)]
@@ -63,31 +77,71 @@ namespace CSSBot
         [RequireUserPermission(ChannelPermission.ManageMessages)]
         public async Task UpdateReminderFrequency([Name("ReminderID")]int id, [Name("Option Text")] string reminderOptionText)
         {
+            var reminder = _reminderService.ActiveReminders.Find(x => x.GuildId == Context.Guild.Id && x.ReminderId == id);
 
+            if (reminder == null)
+            {
+                await ReplyAsync("I couldn't find any active reminders by the supplied ID.");
+            }
+            else
+            {
+                //todo add typereader for this
+                await ReplyAsync("Reminder updated.");
+            }
         }
 
         [Command("UpdateText", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(ChannelPermission.ManageMessages)]
-        public async Task UpdateReminderText()
+        public async Task UpdateReminderText([Name("ReminderID")]int id, [Name("Text"), Remainder()]string text)
         {
+            var reminder = _reminderService.ActiveReminders.Find(x => x.GuildId == Context.Guild.Id && x.ReminderId == id);
 
+            if (reminder == null)
+            {
+                await ReplyAsync("I couldn't find any active reminders by the supplied ID.");
+            }
+            else
+            {
+                _reminderService.UpdateReminder(Context.Guild.Id, id, text: text);
+                await ReplyAsync("Reminder updated.");
+            }
         }
 
         [Command("UpdateTime", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(ChannelPermission.ManageMessages)]
-        public async Task UpdateReminderTime()
+        public async Task UpdateReminderTime([Name("ReminderID")]int id, [Name("Time")]DateTime time)
         {
+            var reminder = _reminderService.ActiveReminders.Find(x => x.GuildId == Context.Guild.Id && x.ReminderId == id);
 
+            if (reminder == null)
+            {
+                await ReplyAsync("I couldn't find any active reminders by the supplied ID.");
+            }
+            else
+            {
+                _reminderService.UpdateReminder(Context.Guild.Id, id, time: time);
+                await ReplyAsync("Reminder updated.");
+            }
         }
 
         [Command("UpdateType", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(ChannelPermission.ManageMessages)]
-        public async Task UpdateReminderType()
+        public async Task UpdateReminderType([Name("ReminderID")]int id, [Name("Type")]ReminderType type)
         {
+            var reminder = _reminderService.ActiveReminders.Find(x => x.GuildId == Context.Guild.Id && x.ReminderId == id);
 
+            if (reminder == null)
+            {
+                await ReplyAsync("I couldn't find any active reminders by the supplied ID.");
+            }
+            else
+            {
+                _reminderService.UpdateReminder(Context.Guild.Id, id, type: type);
+                await ReplyAsync("Reminder updated.");
+            }
         }
 
         /// <summary>
