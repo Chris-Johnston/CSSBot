@@ -56,6 +56,19 @@ namespace CSSBot.Reminders
            }, null, 5000, PollingRate);
         }
 
+        /// <summary>
+        /// Removes all reminders that match by guild id and reminder id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public void RemoveReminderById(ulong guildId, int reminderId)
+        {
+            if(m_Reminders != null && m_Reminders.Reminders != null)
+            {
+                m_Reminders.Reminders.RemoveAll(x => x.ReminderId == reminderId && x.GuildId == guildId);
+            }
+        }
+
         // add a reminder
         public Reminder AddReminder(ulong guildId, ulong channelId, ulong authorId, string text, DateTime time,
             ReminderTimeOption timeOption = ReminderTimeOption.ThirtyMinuteWarning | ReminderTimeOption.OnReminderExpire, 

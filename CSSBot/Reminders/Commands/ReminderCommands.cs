@@ -43,10 +43,26 @@ namespace CSSBot
         /// Dismisses a reminder
         /// </summary>
         /// <returns></returns>
-        public async Task DismissReminder()
+        [Command("DismissReminder", RunMode = RunMode.Async)]
+        [Alias("Dismiss", "End")]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+        [Summary("Dismisses a reminder for this server.")]
+        public async Task DismissReminder([Name("ReminderID")] int id)
         {
             // only allow the author of the reminder, or a user with ManageMessages or Administrator
             // to remove messages
+            var reminder = _reminderService.ActiveReminders.Find(x => x.GuildId == Context.Guild.Id && x.ReminderId == id);
+
+            if (reminder == null)
+            {
+                await ReplyAsync("I couldn't find any active reminders by the supplied ID.");
+            }
+            else
+            {
+                _reminderService.RemoveReminderById(Context.Guild.Id, reminder.ReminderId);
+                await ReplyAsync("Reminder deleted.");
+            }
         }
 
         /// <summary>
@@ -58,7 +74,7 @@ namespace CSSBot
         [Alias("Get")]
         [RequireContext(ContextType.Guild)]
         [Summary("Gets a reminder for this server.")]
-        public async Task GetReminderById(int id)
+        public async Task GetReminderById([Name("ReminderID")]int id)
         {
             var reminder = _reminderService.ActiveReminders.Find(x => x.GuildId == Context.Guild.Id && x.ReminderId == id);
 
