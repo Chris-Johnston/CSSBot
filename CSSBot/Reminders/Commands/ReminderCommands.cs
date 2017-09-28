@@ -73,9 +73,10 @@ namespace CSSBot
         }
 
         [Command("UpdateFrequency", RunMode = RunMode.Async)]
+        [Alias("UpdateAlerts")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(ChannelPermission.ManageMessages)]
-        public async Task UpdateReminderFrequency([Name("ReminderID")]int id, [Name("Option Text")] string reminderOptionText)
+        public async Task UpdateReminderFrequency([Name("ReminderID")]int id, [Name("Option Text")]params ReminderTimeOption[] options)
         {
             var reminder = _reminderService.ActiveReminders.Find(x => x.GuildId == Context.Guild.Id && x.ReminderId == id);
 
@@ -85,10 +86,21 @@ namespace CSSBot
             }
             else
             {
-                //todo add typereader for this
+                _reminderService.UpdateReminder(Context.Guild.Id, id, option: MergeTimeOptionsTogether(options));
                 await ReplyAsync("Reminder updated.");
             }
         }
+
+        private ReminderTimeOption MergeTimeOptionsTogether( ReminderTimeOption[] options)
+        {
+            ReminderTimeOption ret = 0;
+            foreach(ReminderTimeOption o in options)
+            {
+                ret |= o;
+            }
+            return ret;
+        }
+
 
         [Command("UpdateText", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
