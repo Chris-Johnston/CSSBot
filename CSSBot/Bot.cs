@@ -6,17 +6,16 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using CSSBot.Reminders;
+using Discord.Commands;
+using System.Reflection;
 
 namespace CSSBot
 {
     public class Bot
     {
         private DiscordSocketClient m_client;
-        private CommandHandler m_handler;
-
-        private ReminderService m_ReminderService;
-
-        private IServiceCollection m_serviceCollection;
+        private CommandService _commands;
+        private IServiceProvider _services;
 
         public async Task Start()
         {
@@ -24,23 +23,20 @@ namespace CSSBot
             // we use LogSeverity.Debug because more info the better
             m_client = new DiscordSocketClient(new DiscordSocketConfig() { LogLevel = Discord.LogSeverity.Debug });
 
+            _commands = new CommandService();
+
             // log in as a bot using our connection token
             await m_client.LoginAsync(TokenType.Bot, Program.GlobalConfiguration.Data.ConnectionToken);
             await m_client.StartAsync();
 
             // dependency injection
-            m_serviceCollection = new ServiceCollection();
-
-            // add client as a singleton to service collection
-            m_serviceCollection.AddSingleton(m_client);
-
-            // add our reminder service
-            m_ReminderService = new ReminderService(m_client);
-            m_serviceCollection.AddSingleton(m_ReminderService);
-
-            // set up our commands
-            m_handler = new CommandHandler();
-            await m_handler.Install(m_client, m_serviceCollection);
+            _services = new ServiceCollection()
+                .AddSingleton(m_client)
+                .AddSingleton(_commands)
+                .AddSingleton(new ReminderService(m_client))
+                .BuildServiceProvider();
+            
+            await InstallCommandsAsync();
 
             // set up our logging function
             m_client.Log += Log;
@@ -53,6 +49,45 @@ namespace CSSBot
 
             // wait indefinitely 
             await Task.Delay(-1);
+        }
+
+        private async Task InstallCommandsAsync()
+        {
+            m_client.MessageReceived += M_client_MessageReceived;
+            await _services.GetRequiredService<CommandService>().AddModulesAsync(Assembly.GetEntryAssembly());
+
+            //await _commands.AddModulesAsync(Assembly.GetEntryAssembly());
+        }
+
+        private async Task M_client_MessageReceived(SocketMessage arg)
+        {
+            // Don't handle the command if it is a system message
+            var message = arg as SocketUserMessage;
+            if (message == null) return;
+
+            // Mark where the prefix ends and the command begins
+            int argPos = 0;
+            // Determine if the message has a valid prefix, adjust argPos 
+
+            //todo update command handler stuff
+            if (!(message.HasMentionPrefix(m_client.CurrentUser, ref argPos) || message.HasCharPrefix(GlobalConfiguration.CommandPrefix, ref argPos))) return;
+
+            // Create a Command Context
+            var context = new CommandContext(m_client, message);
+            // Execute the Command, store the result
+            var result = await _commands.ExecuteAsync(context, argPos, _services);
+
+            // If the command failed
+            if (!result.IsSuccess)
+            {
+                // log the error
+                Discord.LogMessage errorMessage = new Discord.LogMessage(Discord.LogSeverity.Warning, "CommandHandler", result.ErrorReason);
+                await Log(errorMessage);
+                // don't actually reply back with the error
+
+                // should probably redesign this
+                // if a command doesn't match, should try and find closest matches
+            }
         }
 
         private async Task Client_Ready()

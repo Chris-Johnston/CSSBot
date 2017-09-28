@@ -1,4 +1,5 @@
-﻿using Discord.Commands;
+﻿using CSSBot.Reminders;
+using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -11,6 +12,13 @@ namespace CSSBot
     [Group("Reminder"), Alias("R")]
     public class ReminderCommands : ModuleBase
     {
+        private readonly ReminderService _reminderService;
+
+        public ReminderCommands(ReminderService reminderService)
+        {
+            _reminderService = reminderService;
+        }
+
         /// <summary>
         /// Adds a reminder
         /// </summary>
@@ -20,8 +28,8 @@ namespace CSSBot
         {
             //todo implement ReminderTimeOption
             //todo implement ReminderType
-            //_reminderService.AddReminder(Context.Guild.Id, Context.Channel.Id, Context.User.Id,
-            //    ReminderText, reminderTime);
+            _reminderService.AddReminder(Context.Guild.Id, Context.Channel.Id, Context.User.Id,
+                ReminderText, reminderTime);
 
             string replyText = string.Format("Ok {0}! I've created a reminder for `{1:g}`.", Context.User.Mention, reminderTime);
             await ReplyAsync(replyText);

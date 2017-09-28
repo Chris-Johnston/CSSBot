@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
@@ -26,7 +27,7 @@ namespace CSSBot.Reminders
 
             // load reminders from the file
             LoadReminders();
-            
+
             // add a test reminder
             //AddReminder(283013523284557826, 308882801590272003, 163184946742034432, "reminder", DateTime.Now.AddSeconds(30), ReminderTimeOption.OnReminderExpire | ReminderTimeOption.ThirtyMinuteWarning, ReminderType.Guild);
 
@@ -34,10 +35,10 @@ namespace CSSBot.Reminders
             // to see if we need to send out a reminder
 
             //m_ReminderTimer = new Timer(async _ =>
-            m_ReminderTimer = new Timer( _ =>
-            {
-                CheckReminderState();
-            }, null, 5000, PollingRate);
+            m_ReminderTimer = new Timer(_ =>
+           {
+               CheckReminderState();
+           }, null, 5000, PollingRate);
         }
 
         // add a reminder
