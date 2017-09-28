@@ -72,6 +72,24 @@ namespace CSSBot
             }
         }
 
+        [Command("ListFrequencyOptions")]
+        public async Task ListFrequencyOptions()
+        {
+            string ret = "The following frequency options are available: ";
+            foreach (var value in Enum.GetValues(typeof(ReminderTimeOption)))
+                ret += value.ToString() + " ";
+            await ReplyAsync(ret);
+        }
+
+        [Command("ListTypeOptions")]
+        public async Task ListTypes()
+        {
+            string ret = "The following type options are available: ";
+            foreach (var value in Enum.GetValues(typeof(ReminderType)))
+                ret += value.ToString() + " ";
+            await ReplyAsync(ret);
+        }
+
         [Command("UpdateFrequency", RunMode = RunMode.Async)]
         [Alias("UpdateAlerts")]
         [RequireContext(ContextType.Guild)]
