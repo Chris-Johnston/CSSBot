@@ -57,6 +57,37 @@ namespace CSSBot.Reminders
         }
 
         /// <summary>
+        /// Updates a reminder and manually polls
+        /// </summary>
+        /// <param name="reminder"></param>
+        /// <param name=""></param>
+        public void UpdateReminder(ulong guildId, int id, string text = null, DateTime? time = null, ReminderType? type = null, ReminderTimeOption? option = null)
+        {
+            if(m_Reminders != null && m_Reminders.Reminders != null)
+            {
+                var reminder = m_Reminders.Reminders.Find(x => x.ReminderId == id && x.GuildId == guildId);
+
+                if(reminder != null)
+                {
+                    // set parameters when used
+                    if (!string.IsNullOrEmpty(text))
+                        reminder.ReminderText = text;
+                    if (time.HasValue)
+                        reminder.ReminderTime = time.Value;
+                    if (type.HasValue)
+                        reminder.ReminderType = type.Value;
+                    if (option.HasValue)
+                        reminder.ReminderTimeOption = option.Value;
+
+
+                    // save and poll once again
+                    SaveReminders();
+                    CheckReminderState();
+                }
+            }
+        }
+
+        /// <summary>
         /// Removes all reminders that match by guild id and reminder id
         /// </summary>
         /// <param name="id"></param>
@@ -67,6 +98,24 @@ namespace CSSBot.Reminders
             {
                 m_Reminders.Reminders.RemoveAll(x => x.ReminderId == reminderId && x.GuildId == guildId);
             }
+        }
+
+        private void CheckReminderTimeOption(ref Reminder r)
+        {
+            // check reminder time options
+            ReminderTimeOption alreadyPassed = r.ReminderTimeOption;
+
+            // check to see that the options that were asked for haven't ended already
+            foreach (var value in Enum.GetValues(typeof(ReminderTimeOption)))
+            {
+                if (((r.ReminderTimeOption & (ReminderTimeOption)value) > 0)
+                    && CheckTimeOption(r.ReminderTime, (ReminderTimeOption)value))
+                {
+                    alreadyPassed ^= (ReminderTimeOption)value;
+                }
+            }
+
+            r.ReminderTimeOption = alreadyPassed;
         }
 
         // add a reminder
@@ -96,22 +145,7 @@ namespace CSSBot.Reminders
                         ReminderId = m_Reminders.ReminderCounter
                     };
 
-                    // check reminder time options
-                    ReminderTimeOption alreadyPassed = n.ReminderTimeOption;
-
-                    // check to see that the options that were asked for haven't ended already
-                    foreach (var value in Enum.GetValues(typeof(ReminderTimeOption)))
-                    {
-                        if( ((n.ReminderTimeOption & (ReminderTimeOption)value ) > 0)
-                            && CheckTimeOption(n.ReminderTime, (ReminderTimeOption)value))
-                        {
-                            //Console.WriteLine("" + value + " " + n.ReminderTimeOption + " " + alreadyPassed);
-                            alreadyPassed ^= (ReminderTimeOption)value;
-                            //Console.WriteLine("\t" + value + " " + n.ReminderTimeOption + " " + alreadyPassed);
-                        }
-                    }
-
-                    n.ReminderTimeOption = alreadyPassed;
+                    CheckReminderTimeOption(ref n);
 
                     //Console.WriteLine("Adding a new one, but already passed value was " + alreadyPassed);
 
@@ -190,12 +224,14 @@ namespace CSSBot.Reminders
                 {
                     //Console.WriteLine("checking a reminder, options that need to be sent are: " + r.ReminderTimeOption);
 
+                    bool sentAReminderOnThisPass = false;
                     // iterate through our time options
                     foreach(short value in Enum.GetValues(typeof(ReminderTimeOption)))
                     {
                         // check to see if each of the time options have passed
-                        if (CheckIfReminderNeedsToBeSent(r, (ReminderTimeOption)value))
+                        if (CheckIfReminderNeedsToBeSent(r, (ReminderTimeOption)value) && !sentAReminderOnThisPass)
                         {
+                            sentAReminderOnThisPass = true;
                             //Console.WriteLine("aaaaaaa");
                             SendReminder(r, (ReminderTimeOption)value);
                         }

@@ -24,7 +24,7 @@ namespace CSSBot
         /// Adds a reminder
         /// </summary>
         /// <returns></returns>
-        [Command("Add"), Alias("Create"), RequireContext(ContextType.Guild)]
+        [Command("Add", RunMode = RunMode.Async), Alias("Create", "+"), RequireContext(ContextType.Guild)]
         public async Task AddReminder([Name("Time")]DateTime reminderTime, [Name("Reminder"), Remainder()]string ReminderText)
         {
             //todo implement ReminderTimeOption
@@ -37,6 +37,57 @@ namespace CSSBot
                 string replyText = string.Format("Ok {0}! I've created a reminder for `{1:g}` with the ID # of {2}.", Context.User.Mention, reminderTime, added.ReminderId);
                 await ReplyAsync(replyText);
             }
+        }
+
+        // add channel reminder
+        [Command("AddChannel", RunMode = RunMode.Async)]
+        [Alias("CreateChannel", "+Channel")]
+        [RequireContext(ContextType.Guild)]
+        public async Task AddChannelReminder()
+        {
+
+        }
+
+        // add guild reminder
+        [Command("AddServer", RunMode = RunMode.Async)]
+        [Alias("CreateServer", "+Server", "AddGuild", "CreateGuild", "+Guild")]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(ChannelPermission.ManageMessages)]
+        public async Task AddGuildReminder()
+        {
+
+        }
+
+        [Command("UpdateFrequency", RunMode = RunMode.Async)]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(ChannelPermission.ManageMessages)]
+        public async Task UpdateReminderFrequency([Name("ReminderID")]int id, [Name("Option Text")] string reminderOptionText)
+        {
+
+        }
+
+        [Command("UpdateText", RunMode = RunMode.Async)]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(ChannelPermission.ManageMessages)]
+        public async Task UpdateReminderText()
+        {
+
+        }
+
+        [Command("UpdateTime", RunMode = RunMode.Async)]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(ChannelPermission.ManageMessages)]
+        public async Task UpdateReminderTime()
+        {
+
+        }
+
+        [Command("UpdateType", RunMode = RunMode.Async)]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(ChannelPermission.ManageMessages)]
+        public async Task UpdateReminderType()
+        {
+
         }
 
         /// <summary>
