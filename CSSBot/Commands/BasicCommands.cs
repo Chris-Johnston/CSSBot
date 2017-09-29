@@ -106,5 +106,22 @@ namespace CSSBot.Commands
             await ReplyAsync(txt);
         }
 
+        [Command("Cleanup", RunMode = RunMode.Async)]
+        [Summary("Deletes a specified number of the bot's recent messages.")]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+        [RequireContext(ContextType.Guild)]
+        public async Task CleanupRecent([Name("NumMsg")] int amountToCleanup = 10)
+        {
+            // ensure bounds
+            // don't allow deleting more than 25 because that's a lot to delete
+            // and we don't want to spam api either
+            if (amountToCleanup < 0 || amountToCleanup > 25) amountToCleanup = 10;
+            foreach( var message in await Context.Channel.GetMessagesAsync(Context.Message.Id, Direction.Before, amountToCleanup).Flatten())
+            {
+                if(message.Author.Id == Context.Client.CurrentUser.Id)
+                    await message.DeleteAsync();
+            }
+        }
+
     }
 }
