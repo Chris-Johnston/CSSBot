@@ -79,10 +79,11 @@ namespace CSSBot.Reminders
                     if (option.HasValue)
                         reminder.ReminderTimeOption = option.Value;
 
+                    // check which of our ReminderTimeOption flags we set have already passed
+                    CheckReminderTimeOption(ref reminder);
 
-                    // save and poll once again
+                    // save it afterwards
                     SaveReminders();
-                    CheckReminderState();
                 }
             }
         }
