@@ -9,7 +9,9 @@ namespace CSSBot.Commands
 {
     /// <summary>
     /// Just some basic commands to get started
+    /// use an empty name attribute because these are default
     /// </summary>
+    [Name("")]
     public class BasicCommands : ModuleBase
     {
         // as far as I'm concerned, Dependency Injection is black magic
@@ -68,7 +70,14 @@ namespace CSSBot.Commands
         {
             string ret = "`";
             // show how the command should be used
-            ret += GlobalConfiguration.CommandPrefix + command.Name;
+            if(string.IsNullOrWhiteSpace(command.Module.Name))
+            {
+                ret += GlobalConfiguration.CommandPrefix + command.Name;
+            }
+            else
+            {
+                ret += string.Format("{0}{1} {2}", GlobalConfiguration.CommandPrefix, command.Module.Name, command.Name);
+            }
 
             // add parameters
             foreach(var par in command.Parameters)
