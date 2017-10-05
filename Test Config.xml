@@ -1,3 +1,4 @@
 <Configuration>
 	<ConnectionToken> YOUR DISCORD BOT PRIVATE CONNECTION TOKEN GOES HERE </ConnectionToken>
+  <ReminderFilePath>/the/path/to/your/reminder/file.xml</ReminderFilePath>
 </Configuration>
