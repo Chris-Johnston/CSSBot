@@ -57,6 +57,59 @@ namespace CSSBot.Commands
 
         [Command("Spook")]
         [Alias("Scare")]
+        [Summary("Spooks a role.")]
+        [RequireContext(ContextType.Guild)]
+        [RequireOwner()] // never forget the spam
+        public async Task SpookRole([Name("Role")] IRole role)
+        {
+            foreach(IGuildUser user in await Context.Guild.GetUsersAsync())
+            {
+                // determine if each user in the guild has a match to the role
+                bool match = false;
+                foreach(ulong id in user.RoleIds)
+                {
+                    if (id == role.Id)
+                        match = true;
+                }
+
+                // if they do
+                if(match)
+                {
+                    // then update their user name
+                    // prevent emoji spam
+                    bool alreadySpooked = false;
+                    foreach (string s in _HalloweenEmoji)
+                    {
+                        if (user.Nickname != null && user.Nickname.Contains(s))
+                        {
+                            alreadySpooked = true;
+                        }
+                    }
+
+                    // update it if they don't already have spooky stuff
+                    if (!alreadySpooked)
+                    {
+                        try
+                        {
+                            await user.ModifyAsync(x =>
+                            {
+                                x.Nickname += (user.Nickname ?? user.Username) + GetRandomEmoji();
+                            });
+                        }
+                        // catch permissions exceptions
+                        catch(Exception e)
+                        { }
+                    }
+                }
+            }
+
+            // let everyone know
+            string returnMessage = string.Format("💀💀💀 Uh oh! 💀💀💀\n\n{0} has been spooked!", role.Name);
+            await ReplyAsync(returnMessage);
+        }
+
+        [Command("Spook")]
+        [Alias("Scare")]
         [Summary("Spooks a user.")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageNicknames)]
@@ -66,18 +119,31 @@ namespace CSSBot.Commands
             {
                 if (DateTime.Now - TimeUntilNext > LastTime)
                 {
-                    string replyMessage = string.Format(
-                        "💀💀💀 Uh oh! 💀💀💀\n\n{0} has been spooked!",
-                        user.Mention
-                        );
-                    await user.ModifyAsync(x =>
+                    // prevent emoji spam
+                    bool alreadySpooked = false;
+                    foreach(string s in _HalloweenEmoji)
                     {
-                        x.Nickname += (user.Nickname ?? user.Username) + GetRandomEmoji();
-                    });
+                        if(user.Nickname != null && user.Nickname.Contains(s))
+                        {
+                            alreadySpooked = true;
+                        }
+                    }
 
-                    await ReplyAsync(replyMessage);
+                    if (!alreadySpooked)
+                    {
+                        string replyMessage = string.Format(
+                            "💀💀💀 Uh oh! 💀💀💀\n\n{0} has been spooked!",
+                            user.Mention
+                            );
+                        await user.ModifyAsync(x =>
+                        {
+                            x.Nickname += (user.Nickname ?? user.Username) + GetRandomEmoji();
+                        });
 
-                    LastTime = DateTime.Now;
+                        await ReplyAsync(replyMessage);
+
+                        LastTime = DateTime.Now;
+                    }
                 }
             }
             else
