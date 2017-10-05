@@ -13,19 +13,19 @@ namespace CSSBot.Commands
         private string[] _HalloweenEmoji = new string[]
         {
             // ghost
-            "\u1f47b",
+            "👻",
             // skull
-            "\u1f480",
+            "💀",
             // spider web
-            "\u1f578",
+            "🕸️",
             // spider
-            "\u1f577",
+            "🕷️",
             // bat
-            "\u1f987",
+            "🦇",
             // jack o lantern
-            "\u1f383",
+            "🎃",
             // lightning bolt
-            "\u26a1"
+            "⚡"
         };
 
         private string GetRandomEmoji()
@@ -39,21 +39,30 @@ namespace CSSBot.Commands
             return DateTime.Now.Month == 10;
         }
 
-        [Name("Spook")]
+        [Command("Spook")]
         [Alias("Scare")]
         [Summary("Spooks a user.")]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.ManageNicknames)]
         public async Task Spook([Name("User")]IGuildUser user)
         {
+            foreach(string s in _HalloweenEmoji)
+            {
+                Console.WriteLine(s);
+            }
+
             if (CheckIfOctober())
             {
                 string replyMessage = string.Format(
-                    "\u1f480\u1f480\u1f480 Uh oh! \u1f480\u1f480\u1f480\n{0} has been spooked!",
+                    "💀💀💀 Uh oh! 💀💀💀\n\n{0} has been spooked!",
                     user.Mention
                     );
                 await user.ModifyAsync(x =>
                 {
-                    x.Nickname += GetRandomEmoji();
+                    x.Nickname += (user.Nickname ?? user.Username) + GetRandomEmoji();
                 });
+
+                await ReplyAsync(replyMessage);
             }
             else
             {
