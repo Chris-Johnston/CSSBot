@@ -223,7 +223,7 @@ namespace CSSBot
                 builder.WithAuthor(Context.Client.CurrentUser);
                 builder.WithColor(new Color(255, 204, 77));
 
-                builder.WithTitle(string.Format("Reminder #{0}", reminder.ReminderId));
+                builder.WithTitle(string.Format("Reminder `#{0}`", reminder.ReminderId));
 
                 builder.AddField(reminder.ReminderTime.ToString("g"),
                     string.Format("{0}\n\nRemaining alerts: {1}\nType: {2}", reminder.ReminderText, reminder.ReminderTimeOption, reminder.ReminderType));
@@ -262,7 +262,7 @@ namespace CSSBot
                     var channel = await Context.Guild.GetChannelAsync(x.TextChannelId);
                     var user = await Context.Guild.GetUserAsync(x.AuthorId);
 
-                    string descriptionText = string.Format("{0} {1}: #{3} {2}", channel.Name, user.Username ?? user.Nickname, x.ReminderText, x.ReminderId);
+                    string descriptionText = string.Format("{0} {1}: `#{3}` {2}", channel.Name, user.Username ?? user.Nickname, x.ReminderText, x.ReminderId);
 
                     builder.AddField(x.ReminderTime.ToString("g"), descriptionText, true);
                 });
@@ -303,7 +303,7 @@ namespace CSSBot
                 {
                     var user = await Context.Guild.GetUserAsync(x.AuthorId);
 
-                    string descriptionText = string.Format("{0}: #{2} {1}", user.Username ?? user.Nickname, x.ReminderText, x.ReminderId);
+                    string descriptionText = string.Format("{0}: `#{2}` {1}", user.Username ?? user.Nickname, x.ReminderText, x.ReminderId);
 
                     builder.AddField(x.ReminderTime.ToString("g"), descriptionText, true);
                 });
@@ -342,7 +342,7 @@ namespace CSSBot
 
                 userReminders.ForEach(x =>
                {
-                   string descriptionText = string.Format("#{0} {1}", x.ReminderId, x.ReminderText);
+                   string descriptionText = string.Format("`#{0}` {1}", x.ReminderId, x.ReminderText);
 
                    builder.AddField(x.ReminderTime.ToString("g"), descriptionText, true);
                });
