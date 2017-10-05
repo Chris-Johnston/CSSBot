@@ -12,7 +12,7 @@ namespace CSSBot.Counters.Models
         public int ID { get; set; }
 
         [XmlElement("ChannelID")]
-        public int ChannelID { get; set; }
+        public ulong ChannelID { get; set; }
 
         // which ever text is associated with this counter
         [XmlElement("Text")]
