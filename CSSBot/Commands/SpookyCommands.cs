@@ -25,7 +25,9 @@ namespace CSSBot.Commands
             // jack o lantern
             "🎃",
             // lightning bolt
-            "⚡"
+            "⚡",
+            // doot
+            "💀🎺"
         };
 
         private string GetRandomEmoji()
@@ -39,6 +41,16 @@ namespace CSSBot.Commands
             return DateTime.Now.Month == 10;
         }
 
+        [Command("Doot")]
+        [Alias("Skull Trumpet")]
+        public async Task Doot()
+        {
+            await Context.Message.AddReactionAsync(new Emoji("💀"));
+            await Context.Message.AddReactionAsync(new Emoji("🎺"));
+
+            await ReplyAsync(@"https://www.youtube.com/watch?v=eVrYbKBrI7o");
+        }
+
         [Command("Spook")]
         [Alias("Scare")]
         [Summary("Spooks a user.")]
@@ -46,11 +58,6 @@ namespace CSSBot.Commands
         [RequireUserPermission(GuildPermission.ManageNicknames)]
         public async Task Spook([Name("User")]IGuildUser user)
         {
-            foreach(string s in _HalloweenEmoji)
-            {
-                Console.WriteLine(s);
-            }
-
             if (CheckIfOctober())
             {
                 string replyMessage = string.Format(
