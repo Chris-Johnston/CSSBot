@@ -85,8 +85,8 @@ namespace CSSBot.Counters.Commands
             }
         }
 
-        [Command("Decrement")]
-        [Alias("-", "Subtract", "Minus", "Untick")]
+        [Command("Delete")]
+        [Alias("Remove")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(Discord.GuildPermission.ManageChannels)]
         public async Task Delete(string counterText)
@@ -111,7 +111,7 @@ namespace CSSBot.Counters.Commands
             _countService.Counters.FindAll(
                 x => x.ChannelID == Context.Channel.Id)
                 .ForEach(
-                x => returnText += string.Format("`{0}: {1}`", x.Text, x.Count));
+                x => returnText += string.Format("`{0}: {1}`\n", x.Text, x.Count));
             await ReplyAsync(returnText);
         }
     }
