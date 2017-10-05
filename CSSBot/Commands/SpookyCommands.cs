@@ -30,6 +30,10 @@ namespace CSSBot.Commands
             "💀🎺"
         };
 
+        // wait 30s before spooking another person
+        private readonly TimeSpan TimeUntilNext = TimeSpan.FromSeconds(30);
+        private DateTime LastTime = DateTime.MinValue;
+
         private string GetRandomEmoji()
         {
             Random r = new Random();
@@ -60,16 +64,21 @@ namespace CSSBot.Commands
         {
             if (CheckIfOctober())
             {
-                string replyMessage = string.Format(
-                    "💀💀💀 Uh oh! 💀💀💀\n\n{0} has been spooked!",
-                    user.Mention
-                    );
-                await user.ModifyAsync(x =>
+                if (DateTime.Now - TimeUntilNext > LastTime)
                 {
-                    x.Nickname += (user.Nickname ?? user.Username) + GetRandomEmoji();
-                });
+                    string replyMessage = string.Format(
+                        "💀💀💀 Uh oh! 💀💀💀\n\n{0} has been spooked!",
+                        user.Mention
+                        );
+                    await user.ModifyAsync(x =>
+                    {
+                        x.Nickname += (user.Nickname ?? user.Username) + GetRandomEmoji();
+                    });
 
-                await ReplyAsync(replyMessage);
+                    await ReplyAsync(replyMessage);
+
+                    LastTime = DateTime.Now;
+                }
             }
             else
             {
