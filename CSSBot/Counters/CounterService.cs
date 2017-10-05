@@ -70,7 +70,7 @@ namespace CSSBot.Counters
             // try loading the counter file
             try
             {
-                XmlSerializer ser = new XmlSerializer(typeof(CounterFile);
+                XmlSerializer ser = new XmlSerializer(typeof(CounterFile));
                 using (FileStream fs = new FileStream(path, FileMode.OpenOrCreate))
                 {
                     var v = ser.Deserialize(fs);
