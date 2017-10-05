@@ -56,6 +56,8 @@ namespace CSSBot.Counters
                     Count = 0
                 };
 
+                m_counterData.Counters.Add(newCounter);
+
                 return newCounter;
             }
             return null;
