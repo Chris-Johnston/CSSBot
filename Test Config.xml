@@ -1,3 +1,4 @@
 <Configuration>
 	<ConnectionToken> YOUR DISCORD BOT PRIVATE CONNECTION TOKEN GOES HERE </ConnectionToken>
+  <CounterFilePath>/path/to/your/counter/file.xml</CounterFilePath>
 </Configuration>
