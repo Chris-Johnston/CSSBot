@@ -14,6 +14,9 @@ namespace CSSBot.Counters.Models
         [XmlElement("ChannelID")]
         public ulong ChannelID { get; set; }
 
+        [XmlElement("GuildID")]
+        public ulong GuildID { get; set; }
+
         // which ever text is associated with this counter
         [XmlElement("Text")]
         public string Text { get; set; }

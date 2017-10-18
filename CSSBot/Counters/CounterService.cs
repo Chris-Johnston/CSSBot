@@ -44,13 +44,14 @@ namespace CSSBot.Counters
         /// </summary>
         /// <param name="counterText"></param>
         /// <returns></returns>
-        public Counter MakeNewCounter(string counterText, ulong channelID)
+        public Counter MakeNewCounter(string counterText, ulong channelID, ulong guildID)
         {
             if (m_counterData != null && m_counterData.Counters != null)
             {
                 Counter newCounter = new Counter()
                 {
                     ChannelID = channelID,
+                    GuildID = guildID,
                     Text = counterText,
                     ID = m_counterData.CounterCount + 1,
                     Count = 0

@@ -42,7 +42,7 @@ namespace CSSBot.Counters.Commands
                 x => x.Text.Equals(makeRegular(counterText)) && x.ChannelID == Context.Channel.Id);
             if(counter == null)
             {
-                counter = _countService.MakeNewCounter(counterText.Trim().ToLower(), Context.Channel.Id);
+                counter = _countService.MakeNewCounter(makeRegular(counterText), Context.Channel.Id, Context.Guild.Id);
                 _countService.Save();
                 await ReplyAsync(string.Format("Ok, I've made a new counter for `{0}`.", counter.Text));
             }
@@ -102,16 +102,31 @@ namespace CSSBot.Counters.Commands
             }
         }
 
-        [Command("List")]
+        [Command("ListChannel")]
         [RequireContext(ContextType.Guild)]
         public async Task ListCounters()
         {
             // lists all the counters for the channel
             string returnText = string.Format("Counters for this channel:\n");
             _countService.Counters.FindAll(
-                x => x.ChannelID == Context.Channel.Id)
+                x => x.ChannelID == Context.Channel.Id && x.GuildID == Context.Guild.Id)
                 .ForEach(
                 x => returnText += string.Format("`{0}: {1}`\n", x.Text, x.Count));
+            await ReplyAsync(returnText);
+        }
+
+        [Command("ListGuild")]
+        public async Task ListGuild()
+        {
+            string returnText = string.Format("Counters for this guild:\n");
+            _countService.Counters.FindAll
+                (
+                x => x.GuildID == Context.Guild.Id
+                )
+                .ForEach
+                (
+                x => returnText = string.Format("`{0}: {1}`\n", x.Text, x.Count));
+
             await ReplyAsync(returnText);
         }
     }
