@@ -61,6 +61,7 @@ namespace CSSBot.Commands
             foreach(var x in _commandService.Commands)
             {
                 embed.AddField(x.Name, GenerateCommandDescription(x), true);
+                if (embed.Fields.Count >= 25) break;
             }
 
             await Context.Channel.SendMessageAsync("", false, embed.Build());

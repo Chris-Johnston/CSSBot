@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using CSSBot.Reminders;
 using Discord.Commands;
 using System.Reflection;
+using CSSBot.Counters;
 
 namespace CSSBot
 {
@@ -33,6 +34,7 @@ namespace CSSBot
             _services = new ServiceCollection()
                 .AddSingleton(m_client)
                 .AddSingleton(_commands)
+                .AddSingleton(new CounterService())
                 .AddSingleton(new ReminderService(m_client))
                 .BuildServiceProvider();
             
