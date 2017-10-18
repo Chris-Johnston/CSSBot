@@ -11,7 +11,6 @@ namespace CSSBot.Counters.Commands
     [Summary("Commands that are associated with counting.")]
     public class CounterCommands : ModuleBase
     {
-
         private readonly CounterService _countService;
 
         // Dependency injection FTW
@@ -20,6 +19,8 @@ namespace CSSBot.Counters.Commands
             _countService = service;
         }
 
+        // helper method to ensure that our text is dealt 
+        // with consistently
         private string makeRegular(string text) 
             => text.Trim().ToLower();
 
@@ -32,7 +33,7 @@ namespace CSSBot.Counters.Commands
         [Alias("NewCounter", "Make", "New")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(Discord.GuildPermission.ManageChannels)]
-        public async Task AddCounter(string counterText)
+        public async Task AddCounter([Name("Name")]string counterText)
         {
             // add a new counter (check that it isn't already one that exists)
             // and reply back saying that it has been added
@@ -53,10 +54,15 @@ namespace CSSBot.Counters.Commands
             }
         }
 
+        /// <summary>
+        /// Increments an existing counter
+        /// </summary>
+        /// <param name="counterText"></param>
+        /// <returns></returns>
         [Command("Increment")]
         [Alias("+", "Add", "Plus", "Tally", "Tick")]
         [RequireContext(ContextType.Guild)]
-        public async Task Increment(string counterText)
+        public async Task Increment([Name("Name")]string counterText)
         {
             // increment a counter
             var counter = _countService.Counters.Find(
@@ -69,10 +75,15 @@ namespace CSSBot.Counters.Commands
             }
         }
 
+        /// <summary>
+        /// Decrements an existing counter
+        /// </summary>
+        /// <param name="counterText"></param>
+        /// <returns></returns>
         [Command("Decrement")]
         [Alias("-", "Subtract", "Minus", "Untick")]
         [RequireContext(ContextType.Guild)]
-        public async Task Decrement(string counterText)
+        public async Task Decrement([Name("Name")]string counterText)
         {
             // increment a counter
             var counter = _countService.Counters.Find(
@@ -85,11 +96,16 @@ namespace CSSBot.Counters.Commands
             }
         }
 
+        /// <summary>
+        /// Removes an existing counter
+        /// </summary>
+        /// <param name="counterText"></param>
+        /// <returns></returns>
         [Command("Delete")]
         [Alias("Remove")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(Discord.GuildPermission.ManageChannels)]
-        public async Task Delete(string counterText)
+        public async Task Delete([Name("Name")]string counterText)
         {
             // deletes a counter by the text given
             var counter = _countService.Counters.Find(
@@ -102,7 +118,12 @@ namespace CSSBot.Counters.Commands
             }
         }
 
+        /// <summary>
+        /// Lists all of the counters in the channel
+        /// </summary>
+        /// <returns></returns>
         [Command("ListChannel")]
+        [Alias("List", "Channel")]
         [RequireContext(ContextType.Guild)]
         public async Task ListCounters()
         {
@@ -115,7 +136,10 @@ namespace CSSBot.Counters.Commands
             await ReplyAsync(returnText);
         }
 
+        // lists counters in guild
         [Command("ListGuild")]
+        [Alias("Guild")]
+        [RequireContext(ContextType.Guild)]
         public async Task ListGuild()
         {
             string returnText = string.Format("Counters for this guild:\n");
@@ -130,6 +154,20 @@ namespace CSSBot.Counters.Commands
             await ReplyAsync(returnText);
         }
 
-
+        // sets the counter value
+        [Command("Set")]
+        [Alias("SetCounter")]
+        [RequireContext(ContextType.Guild)]
+        public async Task SetCounter([Name("Name")]string text, [Name("Value")]int value)
+        {
+            var counter = _countService.Counters.Find(
+                x => x.Text == makeRegular(text));
+            if(counter != null)
+            {
+                counter.Count = value;
+                _countService.Save();
+                await ReplyAsync("Ok, I've updated that reminder.");
+            }
+        }
     }
 }
