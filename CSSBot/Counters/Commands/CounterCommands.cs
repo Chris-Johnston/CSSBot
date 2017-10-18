@@ -125,9 +125,11 @@ namespace CSSBot.Counters.Commands
                 )
                 .ForEach
                 (
-                x => returnText = string.Format("`{0}: {1}`\n", x.Text, x.Count));
+                x => returnText += string.Format("`{0}: {1}`\n", x.Text, x.Count));
 
             await ReplyAsync(returnText);
         }
+
+
     }
 }
