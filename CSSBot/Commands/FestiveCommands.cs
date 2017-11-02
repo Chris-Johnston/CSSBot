@@ -28,7 +28,7 @@ namespace CSSBot.Commands
         public bool DoesStringContainEmoji(string str)
         {
             // just allow it for now
-            return true;
+            return false;
 
             foreach(string s in _FestiveEmoji)
             {
