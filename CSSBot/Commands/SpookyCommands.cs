@@ -64,8 +64,15 @@ namespace CSSBot.Commands
         {
             foreach(IGuildUser user in await Context.Guild.GetUsersAsync())
             {
+                bool inRole = false;
+                foreach(ulong id in user.RoleIds)
+                {
+                    if (id == role.Id)
+                        inRole = true;
+                }
+
                 // if the user has a nickname set
-                if(user.Nickname != null)
+                if(user.Nickname != null && inRole)
                 {
                     await Bot.Log(new LogMessage(LogSeverity.Info, "SpookyCommands", "Un-Spooking user " + user.Username));
 
