@@ -27,6 +27,9 @@ namespace CSSBot.Commands
 
         public bool DoesStringContainEmoji(string str)
         {
+            // just allow it for now
+            return true;
+
             foreach(string s in _FestiveEmoji)
             {
                 if (str.Contains(s))
@@ -97,7 +100,7 @@ namespace CSSBot.Commands
 
                 foreach (string s in _FestiveEmoji)
                 {
-                    newNick.Replace(s, "");
+                    newNick = newNick.Replace(s, "");
                 }
 
                 // this sometimes doesn't work with IGuildUsers
@@ -134,7 +137,7 @@ namespace CSSBot.Commands
                 
                 foreach(string s in _FestiveEmoji)
                 {
-                    newNick.Replace(s, "");
+                    newNick = newNick.Replace(s, "");
                 }
 
                 // this sometimes doesn't work with IGuildUsers
