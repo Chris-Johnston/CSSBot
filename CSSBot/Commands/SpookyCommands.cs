@@ -31,7 +31,7 @@ namespace CSSBot.Commands
         };
 
         // wait 30s before spooking another person
-        private readonly TimeSpan TimeUntilNext = TimeSpan.FromSeconds(30);
+        private TimeSpan TimeUntilNext = TimeSpan.FromSeconds(30);
         private DateTime LastTime = DateTime.MinValue;
 
         private string GetRandomEmoji()
@@ -117,8 +117,9 @@ namespace CSSBot.Commands
         {
             if (CheckIfOctober())
             {
-                if (DateTime.Now - TimeUntilNext > LastTime)
+                if (DateTime.Now.Subtract(TimeUntilNext).CompareTo(LastTime) > 0)
                 {
+                    LastTime = DateTime.Now;
                     // prevent emoji spam
                     bool alreadySpooked = false;
                     foreach(string s in _HalloweenEmoji)
