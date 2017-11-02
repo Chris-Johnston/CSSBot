@@ -9,6 +9,9 @@ using CSSBot.Reminders;
 using Discord.Commands;
 using System.Reflection;
 using CSSBot.Counters;
+using CSSBot.Models;
+using CSSBot.Reminders;
+using LiteDB;
 
 namespace CSSBot
 {
@@ -17,9 +20,17 @@ namespace CSSBot
         private DiscordSocketClient m_client;
         private CommandService _commands;
         private IServiceProvider _services;
+        private LiteDatabase _database;
 
         public async Task Start()
         {
+            // open or create our database (if it doesn't exist)
+            _database = new LiteDatabase(Program.GlobalConfiguration.Data.LiteDatabasePath);
+
+            // add our startup date
+            var startup = _database.GetCollection<StartupEvent>("startup");
+            startup.Insert(new StartupEvent() { Time = DateTime.Now });
+            
             // starts our client
             // we use LogSeverity.Debug because more info the better
             m_client = new DiscordSocketClient(new DiscordSocketConfig() { LogLevel = Discord.LogSeverity.Debug });
@@ -34,6 +45,7 @@ namespace CSSBot
             _services = new ServiceCollection()
                 .AddSingleton(m_client)
                 .AddSingleton(_commands)
+                .AddSingleton(_database)
                 .AddSingleton(new CounterService())
                 .AddSingleton(new ReminderService(m_client))
                 .BuildServiceProvider();
@@ -57,8 +69,6 @@ namespace CSSBot
         {
             m_client.MessageReceived += M_client_MessageReceived;
             await _services.GetRequiredService<CommandService>().AddModulesAsync(Assembly.GetEntryAssembly());
-
-            //await _commands.AddModulesAsync(Assembly.GetEntryAssembly());
         }
 
         private async Task M_client_MessageReceived(SocketMessage arg)

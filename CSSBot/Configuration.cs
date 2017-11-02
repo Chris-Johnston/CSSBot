@@ -16,6 +16,11 @@ namespace CSSBot
         [XmlElementAttribute("ConnectionToken")]
         public string ConnectionToken { get; set; }
         
+        [XmlElement("LiteDatabasePath")]
+        public string LiteDatabasePath { get; set; }
+
+        // ReminderFilePath and CounterFilePath need to be deleted once we have LiteDB fully implemented
+
         // the path to the reminder file
         [XmlElement("ReminderFilePath")]
         public string ReminderFilePath { get; set; }
