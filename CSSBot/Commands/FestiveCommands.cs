@@ -15,7 +15,8 @@ namespace CSSBot.Commands
         {
             // why is there an emoji for snowman with snow
             // and snowman without snow
-            "🌟", "❄️", "☃️", "⛄", "⛄", "🎄", "🕎", "✡️", "🌙"
+            "🌟", "❄️", "☃️", "⛄", "⛄", "🎄", "🕎", "✡️", "🌙",
+            "🦃", "🍁"
         };
 
         private bool CheckDate()
