@@ -86,6 +86,42 @@ namespace CSSBot.Commands
 
         [Command("UnFestive")]
         [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.ChangeNickname)]
+        public async Task UnFestiveSelf()
+        {
+            var user = Context.User as IGuildUser;
+
+            if (user.Nickname != null)
+            {
+                string newNick = user.Nickname;
+
+                foreach (string s in _FestiveEmoji)
+                {
+                    newNick.Replace(s, "");
+                }
+
+                // this sometimes doesn't work with IGuildUsers
+                // unsure why specifically
+                try
+                {
+                    await user.ModifyAsync(x =>
+                    {
+                        x.Nickname = newNick;
+                    });
+                }
+                catch (Exception e)
+                {
+                    return;
+                }
+                string replyStr = string.Format(
+                    "Uh-oh! {0} has been made un-festive!",
+                    user.Mention);
+                await ReplyAsync(replyStr);
+            }
+        }
+
+        [Command("UnFestive")]
+        [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageNicknames)]
         public async Task UnFestive(IGuildUser user = null)
         {
