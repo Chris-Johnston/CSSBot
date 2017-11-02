@@ -173,23 +173,34 @@ namespace CSSBot.Commands
             {
                 foreach (IGuildUser user in await Context.Guild.GetUsersAsync())
                 {
-                    string name = user.Nickname ?? user.Username;
-
-                    if (!DoesStringContainEmoji(name))
+                    bool hasRole = false;
+                    foreach(var r in user.RoleIds)
                     {
-                        name += GetRandom();
+                        if (role.Id == r)
+                            hasRole = true;
+                    }
 
-                        // try to update their name
-                        try
+                    if (hasRole)
+                    {
+
+                        string name = user.Nickname ?? user.Username;
+
+                        if (!DoesStringContainEmoji(name))
                         {
-                            await user.ModifyAsync(x =>
-                           {
-                               x.Nickname = name;
-                           });
-                        }
-                        catch (Exception e)
-                        {
-                            // permissions exceptions
+                            name += GetRandom();
+
+                            // try to update their name
+                            try
+                            {
+                                await user.ModifyAsync(x =>
+                               {
+                                   x.Nickname = name;
+                               });
+                            }
+                            catch (Exception e)
+                            {
+                                // permissions exceptions
+                            }
                         }
                     }
                 }
