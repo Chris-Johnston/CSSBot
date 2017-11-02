@@ -124,37 +124,76 @@ namespace CSSBot.Commands
         [Command("Festive")]
         [Alias("Santa")]
         [RequireContext(ContextType.Guild)]
-        [RequireUserPermission(GuildPermission.ManageNicknames)]
-        public async Task FestiveUser(IGuildUser user = null)
+        [RequireUserPermission(GuildPermission.ChangeNickname)]
+        public async Task FestiveSelf()
         {
-            if (user == null)
-                user = Context.User as IGuildUser;
-
-            if(CheckDate())
+            var user = Context.User as IGuildUser;
+            if (CheckDate())
             {
                 string name = user.Nickname ?? user.Username;
-                if(!DoesStringContainEmoji(name))
+                if (!DoesStringContainEmoji(name))
                 {
                     name += GetRandom();
 
                     try
                     {
                         await user.ModifyAsync(x =>
-                       {
-                           x.Nickname = name;
-                       });
+                        {
+                            x.Nickname = name;
+                        });
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         return;
                     }
-                    
+
+                    string replyStr = string.Format(
+                    "⛄⛄⛄ Uh oh! ⛄⛄⛄\n\n{0} has been ~~spooked~~ made festive!"
+                    , user.Mention
+                    );
+                    await ReplyAsync(replyStr);
+                }
+            }
+            else
+            {
+                await ReplyAsync("Try again between November and January!");
+            }
+        }
+
+        [Command("Festive")]
+        [Alias("Santa")]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.ManageNicknames)]
+        public async Task FestiveUser(IGuildUser user = null)
+        {
+            if (user == null)
+                user = Context.User as IGuildUser;
+
+            if (CheckDate())
+            {
+                string name = user.Nickname ?? user.Username;
+                if (!DoesStringContainEmoji(name))
+                {
+                    name += GetRandom();
+
+                    try
+                    {
+                        await user.ModifyAsync(x =>
+                        {
+                            x.Nickname = name;
+                        });
+                    }
+                    catch (Exception e)
+                    {
+                        return;
+                    }
+
                     string replyStr = string.Format(
                     "⛄⛄⛄ Uh oh! ⛄⛄⛄\n\n{0} has been ~~spooked~~ made festive by {1}!"
                     , user.Mention, Context.User.Mention
                     );
                     await ReplyAsync(replyStr);
-                }               
+                }
             }
             else
             {
