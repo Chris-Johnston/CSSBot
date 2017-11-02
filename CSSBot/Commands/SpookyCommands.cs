@@ -180,9 +180,16 @@ namespace CSSBot.Commands
                     if (!alreadySpooked)
                     {
                         string replyMessage = string.Format(
-                            "💀💀💀 Uh oh! 💀💀💀\n\n{0} has been spooked!",
-                            user.Mention
+                            "💀💀💀 Uh oh! 💀💀💀\n\n{0} has been spooked by {1}!",
+                            user.Mention,
+                            Context.User.Mention
                             );
+                        await Bot.Log(
+                            new Discord.LogMessage(
+                                Discord.LogSeverity.Warning,
+                                "SpookyCommands",
+                                Context.User.Username + " spooked somebody"
+                            ));
                         await user.ModifyAsync(x =>
                         {
                             x.Nickname += (user.Nickname ?? user.Username) + GetRandomEmoji();
