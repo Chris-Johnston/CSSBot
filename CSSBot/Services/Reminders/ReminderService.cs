@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
+using CSSBot.Reminders.Models;
 
 namespace CSSBot.Reminders
 {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml.Serialization;
 
-namespace CSSBot.Reminders
+namespace CSSBot.Reminders.Models
 {
     [XmlRoot("ReminderList")]
     public class ReminderList

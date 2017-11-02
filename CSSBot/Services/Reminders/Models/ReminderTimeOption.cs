@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace CSSBot.Reminders
+namespace CSSBot.Reminders.Models
 {
     /// <summary>
     // flags for determining how often reminders should be given

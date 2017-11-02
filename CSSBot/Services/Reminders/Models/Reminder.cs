@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml.Serialization;
 
-namespace CSSBot.Reminders
+namespace CSSBot.Reminders.Models
 {
     /// <summary>
     /// Represents a reminder, which will be saved/loaded from a file
