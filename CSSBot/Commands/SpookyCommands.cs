@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 
 namespace CSSBot.Commands
 {
-    //todo don't load this automatically but only load it if in october
     public class SpookyCommands : ModuleBase
     {
         private string[] _HalloweenEmoji = new string[]
@@ -18,6 +17,7 @@ namespace CSSBot.Commands
             "💀",
             // spider web
             "🕸️",
+            "🕷",
             // spider
             "🕷️",
             // bat
@@ -27,7 +27,7 @@ namespace CSSBot.Commands
             // lightning bolt
             "⚡",
             // doot
-            "💀🎺"
+            "🎺"
         };
 
         // wait 30s before spooking another person
@@ -53,6 +53,46 @@ namespace CSSBot.Commands
             await Context.Message.AddReactionAsync(new Emoji("🎺"));
 
             await ReplyAsync(@"https://www.youtube.com/watch?v=eVrYbKBrI7o");
+        }
+
+        [Command("UnSpook")]
+        [Alias("UnScare")]
+        [Summary("Un-Spooks a role.")]
+        [RequireContext(ContextType.Guild)]
+        [RequireOwner()]
+        public async Task UnSpookRole([Name("Role")] IRole role)
+        {
+            foreach(IGuildUser user in await Context.Guild.GetUsersAsync())
+            {
+                // if the user has a nickname set
+                if(user.Nickname != null)
+                {
+                    await Bot.Log(new LogMessage(LogSeverity.Info, "SpookyCommands", "Un-Spooking user " + user.Username));
+
+                    string newNick = user.Nickname;
+                    // replace each instance of the emoji with a blank
+                    foreach(string s in _HalloweenEmoji)
+                    {
+                        newNick = newNick.Replace(s, "");
+                    }
+
+                    // set their unspooked nickname
+                    // :(
+                    try
+                    {
+                        await user.ModifyAsync(x =>
+                        {
+                            x.Nickname = newNick;
+                        });
+                    }
+                    catch(Exception e)
+                    {
+                        // might have thrown permissions exception
+                    }
+                }
+            }
+
+            await ReplyAsync("Uh-oh! Looks like " + role.Mention + " has been un-spooked!");
         }
 
         [Command("Spook")]
