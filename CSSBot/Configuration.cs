@@ -18,15 +18,5 @@ namespace CSSBot
         
         [XmlElement("LiteDatabasePath")]
         public string LiteDatabasePath { get; set; }
-
-        // ReminderFilePath and CounterFilePath need to be deleted once we have LiteDB fully implemented
-
-        // the path to the reminder file
-        [XmlElement("ReminderFilePath")]
-        public string ReminderFilePath { get; set; }
-
-        // the path to the counter file
-        [XmlElement("CounterFilePath")]
-        public string CounterFilePath { get; set; }
     }
 }
