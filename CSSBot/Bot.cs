@@ -46,7 +46,7 @@ namespace CSSBot
                 .AddSingleton(m_client)
                 .AddSingleton(_commands)
                 .AddSingleton(_database)
-                .AddSingleton(new CounterService())
+                .AddSingleton(new CounterService(_database))
                 .AddSingleton(new ReminderService(m_client))
                 .BuildServiceProvider();
             

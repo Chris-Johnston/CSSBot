@@ -4,38 +4,31 @@ using System.Text;
 using CSSBot.Counters.Models;
 using System.Xml.Serialization;
 using System.IO;
+using LiteDB;
 
 namespace CSSBot.Counters
 {
     public class CounterService
     {
-        private CounterFile m_counterData;
-        private string m_Path;
-
-        public CounterService()
+        private LiteDatabase _database;
+        
+        public CounterService(LiteDatabase db)
         {
-            m_Path = Program.GlobalConfiguration.Data.CounterFilePath;
-            LoadCounterFile(m_Path);
-        }
-
-        /// <summary>
-        /// Saves all changes made to the counters
-        /// </summary>
-        public void Save()
-        {
-            SaveCounterFile(m_Path);
+            _database = db;
         }
 
         /// <summary>
         /// The list of all the counters
         /// </summary>
-        public List<Counter> Counters
+        public LiteCollection<Counter> Counters
         {
             get
             {
-                if (m_counterData != null && m_counterData.Counters != null)
-                    return m_counterData.Counters;
-                return new List<Counter>();
+                return _database.GetCollection<Counter>("counters");
+
+                //if (m_counterData != null && m_counterData.Counters != null)
+                //    return m_counterData.Counters;
+                //return new List<Counter>();
             }
         }
 
@@ -46,79 +39,94 @@ namespace CSSBot.Counters
         /// <returns></returns>
         public Counter MakeNewCounter(string counterText, ulong channelID, ulong guildID)
         {
-            if (m_counterData != null && m_counterData.Counters != null)
+            // do NOT set the ID, we are letting LiteDB do that for us (yay)
+            Counter newCounter = new Counter()
             {
-                Counter newCounter = new Counter()
-                {
-                    ChannelID = channelID,
-                    GuildID = guildID,
-                    Text = counterText,
-                    ID = m_counterData.CounterCount + 1,
-                    Count = 0
-                };
+                ChannelID = channelID,
+                GuildID = guildID,
+                Text = counterText,
+                Count = 0
+            };
 
-                m_counterData.Counters.Add(newCounter);
+            Counters.Insert(newCounter);
 
-                return newCounter;
-            }
-            return null;
+            // return the value that we inserted
+            //return id;
+            return newCounter;
+
+            //if (m_counterData != null && m_counterData.Counters != null)
+            //{
+            //    Counter newCounter = new Counter()
+            //    {
+            //        ChannelID = channelID,
+            //        GuildID = guildID,
+            //        Text = counterText,
+            //        ID = m_counterData.CounterCount + 1,
+            //        Count = 0
+            //    };
+
+            //    m_counterData.Counters.Add(newCounter);
+
+            //    return newCounter;
+            //}
+            //return null;
         }
 
-        /// <summary>
-        /// Loads the counter file
-        /// </summary>
-        /// <param name="path"></param>
-        private void LoadCounterFile(string path)
-        {
-            // try loading the counter file
-            try
-            {
-                XmlSerializer ser = new XmlSerializer(typeof(CounterFile));
-                using (FileStream fs = new FileStream(path, FileMode.OpenOrCreate))
-                {
-                    var v = ser.Deserialize(fs);
-                    m_counterData = v as CounterFile;
-                }
-            }
-            catch (Exception e)
-            {
-                Bot.Log(
-                    new Discord.LogMessage(Discord.LogSeverity.Warning, "CounterService", "Tried to load counter data and got exception.", e));
-            }
+        ///// <summary>
+        ///// Loads the counter file
+        ///// </summary>
+        ///// <param name="path"></param>
+        //private void LoadCounterFile(string path)
+        //{
+        //    // try loading the counter file
+        //    try
+        //    {
+        //        XmlSerializer ser = new XmlSerializer(typeof(CounterFile));
+        //        using (FileStream fs = new FileStream(path, FileMode.OpenOrCreate))
+        //        {
+        //            var v = ser.Deserialize(fs);
+        //            m_counterData = v as CounterFile;
+        //        }
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Bot.Log(
+        //            new Discord.LogMessage(Discord.LogSeverity.Warning, "CounterService", "Tried to load counter data and got exception.", e));
+        //    }
 
-            // if we get here without populating, then something went wrong
-            // lets just create it here for the first time
-            if(m_counterData == null)
-            {
-                m_counterData = new CounterFile();
-                // and then save it
-                SaveCounterFile(path);
-            }
-        }
+        //    // if we get here without populating, then something went wrong
+        //    // lets just create it here for the first time
+        //    if(m_counterData == null)
+        //    {
+        //        m_counterData = new CounterFile();
+        //        // and then save it
+        //        SaveCounterFile(path);
+        //    }
+        //}
 
-        /// <summary>
-        /// Saves the counter file
-        /// </summary>
-        /// <param name="path"></param>
-        private void SaveCounterFile(string path)
-        {
-            try
-            {
-                XmlSerializer ser = new XmlSerializer(typeof(CounterFile));
-                using (var fs = new FileStream(path, FileMode.Create))
-                {
-                    using (var writer = new StreamWriter(fs))
-                    {
-                        ser.Serialize(writer, m_counterData);
-                        writer.Flush();
-                    }
-                }
-            }
-            catch(Exception e)
-            {
-                Bot.Log(new Discord.LogMessage(Discord.LogSeverity.Warning, "CounterService", "Error trying to save file!", e));
-            }
-        }
+        ///// <summary>
+        ///// Saves the counter file
+        ///// </summary>
+        ///// <param name="path"></param>
+        //private void SaveCounterFile(string path)
+        //{
+        //    try
+        //    {
+        //        XmlSerializer ser = new XmlSerializer(typeof(CounterFile));
+        //        using (var fs = new FileStream(path, FileMode.Create))
+        //        {
+        //            using (var writer = new StreamWriter(fs))
+        //            {
+        //                ser.Serialize(writer, m_counterData);
+        //                writer.Flush();
+        //            }
+        //        }
+        //    }
+        //    catch(Exception e)
+        //    {
+        //        Bot.Log(new Discord.LogMessage(Discord.LogSeverity.Warning, "CounterService", "Error trying to save file!", e));
+        //    }
+        //}
 
     }
 }

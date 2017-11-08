@@ -1,4 +1,5 @@
 ﻿using Discord.Commands;
+using LiteDB;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -38,19 +39,22 @@ namespace CSSBot.Counters.Commands
             // add a new counter (check that it isn't already one that exists)
             // and reply back saying that it has been added
 
-            // try to find a counter that matches
-            var counter = _countService.Counters.Find(
-                x => x.Text.Equals(makeRegular(counterText)) && x.ChannelID == Context.Channel.Id);
-            if(counter == null)
+            var matches = _countService.Counters.FindOne(x => x.Text.ToLower().Equals(counterText.ToLower()));
+
+            if(matches == null)
             {
-                counter = _countService.MakeNewCounter(makeRegular(counterText), Context.Channel.Id, Context.Guild.Id);
-                _countService.Save();
-                await ReplyAsync(string.Format("Ok, I've made a new counter for `{0}`.", counter.Text));
+                // didn't match so we can insert
+                var n = _countService.MakeNewCounter(counterText.ToLower(), Context.Channel.Id, Context.Guild.Id);
+                string reply = string.Format("Ok! I've added a counter for `{0}`.",
+                    n.Text);
+                await ReplyAsync(reply);
             }
             else
             {
-                await ReplyAsync(string.Format("This counter (`{0}`) already exists, and has a value of `{1}`.", 
-                    counter.Text, counter.Count));
+                // reply back if there was a match
+                string reply = string.Format("The counter `{0}` already exists, and has a value of: `{1}`",
+                    matches.Text, matches.Count);
+                await ReplyAsync(reply);
             }
         }
 
@@ -65,13 +69,14 @@ namespace CSSBot.Counters.Commands
         public async Task Increment([Name("Name")]string counterText)
         {
             // increment a counter
-            var counter = _countService.Counters.Find(
-                x => x.Text.Equals(makeRegular(counterText)) && x.ChannelID == Context.Channel.Id);
-            if (counter != null)
+            var match = _countService.Counters.FindOne(x => x.Text.ToLower().Equals(counterText.ToLower()));
+            if (match != null)
             {
-                counter.Count++;
-                _countService.Save();
-                await ReplyAsync(string.Format("`{0}` : {1}", counter.Text, counter.Count));
+                match.Increment();
+                // update our DB
+                _countService.Counters.Update(match);
+
+                await ReplyAsync(string.Format("`{0}` : {1}", match.Text, match.Count));
             }
         }
 
@@ -85,14 +90,15 @@ namespace CSSBot.Counters.Commands
         [RequireContext(ContextType.Guild)]
         public async Task Decrement([Name("Name")]string counterText)
         {
-            // increment a counter
-            var counter = _countService.Counters.Find(
-                x => x.Text.Equals(makeRegular(counterText)) && x.ChannelID == Context.Channel.Id);
-            if (counter != null)
+            // decrement a counter
+            var match = _countService.Counters.FindOne(x => x.Text.ToLower().Equals(counterText.ToLower()));
+            if (match != null)
             {
-                counter.Count--;
-                _countService.Save();
-                await ReplyAsync(string.Format("`{0}` : {1}", counter.Text, counter.Count));
+                match.Decrement();
+                // update our DB
+                _countService.Counters.Update(match);
+
+                await ReplyAsync(string.Format("`{0}` : {1}", match.Text, match.Count));
             }
         }
 
@@ -106,16 +112,14 @@ namespace CSSBot.Counters.Commands
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(Discord.GuildPermission.ManageChannels)]
         public async Task Delete([Name("Name")]string counterText)
-        {
-            // deletes a counter by the text given
-            var counter = _countService.Counters.Find(
-                x => x.Text.Equals(makeRegular(counterText)) && x.ChannelID == Context.Channel.Id);
-            if (counter != null)
+        { 
+            int count = _countService.Counters.Delete(x => x.Text.ToLower().Equals(counterText.ToLower()));
+            if (count == 0)
             {
-                _countService.Counters.RemoveAll(x => x.ID == counter.ID);
-                _countService.Save();
-                await ReplyAsync(string.Format("Deleted `{0}` : {1}", counter.Text, counter.Count));
+                await ReplyAsync("I couldn't find any matching counters to delete.");
             }
+            else
+                await ReplyAsync(string.Format("Ok! I've deleted {0} counter(s).", count));
         }
 
         /// <summary>
@@ -127,29 +131,32 @@ namespace CSSBot.Counters.Commands
         [RequireContext(ContextType.Guild)]
         public async Task ListCounters()
         {
-            // lists all the counters for the channel
-            string returnText = string.Format("Counters for this channel:\n");
-            _countService.Counters.FindAll(
-                x => x.ChannelID == Context.Channel.Id && x.GuildID == Context.Guild.Id)
-                .ForEach(
-                x => returnText += string.Format("`{0}: {1}`\n", x.Text, x.Count));
+            string returnText = "Counters for this channel:\n";
+
+            var matches = _countService.Counters.Find(x => x.ChannelID == Context.Channel.Id);
+
+            foreach (var c in matches)
+            {
+                returnText += string.Format("`{0}: {1}`\n", c.Text, c.Count);
+            }
+
             await ReplyAsync(returnText);
         }
 
         // lists counters in guild
         [Command("ListGuild")]
-        [Alias("Guild")]
+        [Alias("Guild", "ListServer", "Server")]
         [RequireContext(ContextType.Guild)]
         public async Task ListGuild()
         {
-            string returnText = string.Format("Counters for this guild:\n");
-            _countService.Counters.FindAll
-                (
-                x => x.GuildID == Context.Guild.Id
-                )
-                .ForEach
-                (
-                x => returnText += string.Format("`{0}: {1}`\n", x.Text, x.Count));
+            string returnText = "Counters for this server:\n";
+
+            var matches = _countService.Counters.Find(x => x.GuildID == Context.Guild.Id);
+
+            foreach(var c in matches)
+            {
+                returnText += string.Format("`{0}: {1}`\n", c.Text, c.Count);
+            }
 
             await ReplyAsync(returnText);
         }
@@ -160,13 +167,15 @@ namespace CSSBot.Counters.Commands
         [RequireContext(ContextType.Guild)]
         public async Task SetCounter([Name("Name")]string text, [Name("Value")]int value)
         {
-            var counter = _countService.Counters.Find(
-                x => x.Text == makeRegular(text));
-            if(counter != null)
+            // set a counter value
+            var match = _countService.Counters.FindOne(x => x.Text.ToLower().Equals(text.ToLower()));
+            if (match != null)
             {
-                counter.Count = value;
-                _countService.Save();
-                await ReplyAsync("Ok, I've updated that reminder.");
+                match.SetCount(value);
+                // update our DB
+                _countService.Counters.Update(match);
+
+                await ReplyAsync(string.Format("`{0}` : {1}", match.Text, match.Count));
             }
         }
     }

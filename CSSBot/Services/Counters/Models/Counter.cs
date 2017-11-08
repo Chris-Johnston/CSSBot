@@ -2,35 +2,51 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Xml.Serialization;
+using LiteDB;
 
 namespace CSSBot.Counters.Models
 {
     public class Counter
     {
-        // the ID associated with this counter
+        // the unique ID associated with this counter
         [XmlElement("ID")]
+        [BsonId]
         public int ID { get; set; }
 
         [XmlElement("ChannelID")]
+        [BsonField]
         public ulong ChannelID { get; set; }
 
         [XmlElement("GuildID")]
+        [BsonField]
         public ulong GuildID { get; set; }
 
         // which ever text is associated with this counter
         [XmlElement("Text")]
+        [BsonField]
         public string Text { get; set; }
 
-        // the count of this counter
+        // the count value of this counter
         [XmlElement("Count")]
+        [BsonField]
         public int Count { get; set; }
 
         /// <summary>
-        /// Constructor. Sets count to 0
+        /// Constructor
         /// </summary>
         public Counter()
         {
-            Count = 0;
+            // wait on this, just in case litedb calls this and the value of the 
+            // counter gets reset to zero each time, which would be bad
+            //Count = 0;
         }
+
+        public int ResetCount() { return Count = 0; }
+
+        public int SetCount(int c) { return Count = c; }
+
+        public int Increment() { return Count++; }
+
+        public int Decrement() { return Count--; }
     }
 }
