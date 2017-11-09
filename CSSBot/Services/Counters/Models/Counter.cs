@@ -9,25 +9,20 @@ namespace CSSBot.Counters.Models
     public class Counter
     {
         // the unique ID associated with this counter
-        [XmlElement("ID")]
         [BsonId]
         public int ID { get; set; }
 
-        [XmlElement("ChannelID")]
         [BsonField]
         public ulong ChannelID { get; set; }
 
-        [XmlElement("GuildID")]
         [BsonField]
         public ulong GuildID { get; set; }
 
         // which ever text is associated with this counter
-        [XmlElement("Text")]
         [BsonField]
         public string Text { get; set; }
 
         // the count value of this counter
-        [XmlElement("Count")]
         [BsonField]
         public int Count { get; set; }
 
