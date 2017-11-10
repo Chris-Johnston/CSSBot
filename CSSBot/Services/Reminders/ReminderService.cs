@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using CSSBot.Reminders.Models;
+using LiteDB;
 
 namespace CSSBot.Reminders
 {
@@ -17,269 +18,210 @@ namespace CSSBot.Reminders
     {
         // how long in ms to poll
         private const int PollingRate = 60000;
-
-        private ReminderList m_Reminders;
         private Timer m_ReminderTimer;
-
+        private LiteDatabase m_database;
         private readonly DiscordSocketClient m_client;
 
-        //should consider making this a read only list
-        public List<Reminder> ActiveReminders
-        {
-            get
-            {
-                if(m_Reminders != null && m_Reminders.Reminders != null)
-                {
-                    return new List<Reminder>(m_Reminders.Reminders);
-                }
-                // empty list
-                return new List<Reminder>();
-            }
-        }
-
-        public ReminderService(DiscordSocketClient client)
+        public ReminderService(DiscordSocketClient client, LiteDatabase db)
         {
             m_client = client;
+            m_database = db;
 
-            // load reminders from the file
-            LoadReminders();
-
-            // add a test reminder
-            //AddReminder(283013523284557826, 308882801590272003, 163184946742034432, "reminder", DateTime.Now.AddSeconds(30), ReminderTimeOption.OnReminderExpire | ReminderTimeOption.ThirtyMinuteWarning, ReminderType.Guild);
-
-            // set up our timer that will poll every PollingRate
-            // to see if we need to send out a reminder
-
-            //m_ReminderTimer = new Timer(async _ =>
             m_ReminderTimer = new Timer(_ =>
-           {
-               CheckReminderState();
-           }, null, 5000, PollingRate);
+            {
+                // Check Reminders
+                CheckReminders();
+
+            }, null, 5000, PollingRate);
         }
 
-        /// <summary>
-        /// Updates a reminder and manually polls
-        /// </summary>
-        /// <param name="reminder"></param>
-        /// <param name=""></param>
-        public void UpdateReminder(ulong guildId, int id, string text = null, DateTime? time = null, ReminderType? type = null, ReminderTimeOption? option = null)
+        public Reminder GetReminder(ulong guildId, int id)
         {
-            if(m_Reminders != null && m_Reminders.Reminders != null)
+            return m_database.GetCollection<Reminder>("Reminders").FindOne(
+                x => x.GuildId == guildId && x.ID == id);
+        }
+
+        public IEnumerable<Reminder> GetReminderChannel(ulong channelID)
+        {
+            return m_database.GetCollection<Reminder>("Reminders").Find(
+                x => x.TextChannelId == channelID);
+        }
+
+        public IEnumerable<Reminder> GetReminderGuild(ulong guildId)
+        {
+            return m_database.GetCollection<Reminder>("Reminders").Find(
+                x => x.GuildId == guildId);
+        }
+
+        public IEnumerable<Reminder> GetReminderAuthor(ulong auth, ulong guild)
+        {
+            return m_database.GetCollection<Reminder>("Reminders").Find(
+                x => x.AuthorId == auth && x.GuildId == guild);
+        }
+
+        private void CheckReminders()
+        {
+            // loop through all of the reminders
+            // and get the most recently expired
+            // reminder
+            // if its not null then actually
+            // send the reminder and 
+            // delete the old message
+
+            List<Reminder> expired = new List<Reminder>();
+
+            var reminders = m_database.GetCollection<Reminder>("Reminders");
+            foreach(var r in reminders.FindAll())
             {
-                var reminder = m_Reminders.Reminders.Find(x => x.ReminderId == id && x.GuildId == guildId);
-
-                if(reminder != null)
+                TimeSpan? ts = r.CheckExpiredTimeSpan();
+                if(ts.HasValue)
                 {
-                    // set parameters when used
-                    if (!string.IsNullOrEmpty(text))
-                        reminder.ReminderText = text;
-                    if (time.HasValue)
-                        reminder.ReminderTime = time.Value;
-                    if (type.HasValue)
-                        reminder.ReminderType = type.Value;
-                    if (option.HasValue)
-                        reminder.ReminderTimeOption = option.Value;
+                    // send a message, ts expired
+                    SendReminder(r, ts.Value);
 
-                    // check which of our ReminderTimeOption flags we set have already passed
-                    CheckReminderTimeOption(ref reminder);
+                    // delete the old one
+                    // this is done in checkexpiredtimespan
+                    if (r.ReminderTimeSpanTicks.Count == 0)
+                        expired.Add(r);
 
-                    // save it afterwards
-                    SaveReminders();
+                    // set the new mesasge id
+                    // this is done in sendreminder
+
+                    // if we are out of reminders
+                    // then delete this reminder
+                    // actually leave it for now
                 }
             }
+
+            foreach( var r in expired)
+            {
+                m_database.GetCollection<Reminder>("Reminders").Delete(r.ID);
+            }
+        }
+        
+        //public ReminderService(DiscordSocketClient client)
+        //{
+        //    m_client = client;
+
+        //    // load reminders from the file
+        //    LoadReminders();
+
+        //    // add a test reminder
+        //    //AddReminder(283013523284557826, 308882801590272003, 163184946742034432, "reminder", DateTime.Now.AddSeconds(30), ReminderTimeOption.OnReminderExpire | ReminderTimeOption.ThirtyMinuteWarning, ReminderType.Guild);
+
+        //    // set up our timer that will poll every PollingRate
+        //    // to see if we need to send out a reminder
+
+        //    //m_ReminderTimer = new Timer(async _ =>
+        //    m_ReminderTimer = new Timer(_ =>
+        //   {
+        //       CheckReminderState();
+        //   }, null, 5000, PollingRate);
+        //}
+
+        public void UpdateReminder(ulong guildId, int id, string text = null, DateTime? time = null, ReminderType? type = null)
+        {
+            var coll = m_database.GetCollection<Reminder>("Reminders");
+            var match = coll.Find(x => x.GuildId == guildId && x.ID == id);
+            foreach(Reminder r in match)
+            {
+                if(!string.IsNullOrEmpty(text))
+                    r.ReminderText = text;
+                if(time.HasValue)
+                    r.ReminderTime = time.Value;
+                if (type.HasValue)
+                    r.ReminderType = type.Value;
+
+                coll.Update(r);
+            }            
         }
 
-        /// <summary>
-        /// Removes all reminders that match by guild id and reminder id
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public void RemoveReminderById(ulong guildId, int reminderId)
+        public void RemoveReminderTime(ulong guildId, int id, TimeSpan time)
         {
-            if(m_Reminders != null && m_Reminders.Reminders != null)
+            var col = m_database.GetCollection<Reminder>("Reminders");
+            var match = col.Find(x => x.GuildId == guildId && x.ID == id);
+            foreach(Reminder r in match)
             {
-                m_Reminders.Reminders.RemoveAll(x => x.ReminderId == reminderId && x.GuildId == guildId);
+                r.RemoveTimeSpan(time);
+                col.Update(r);
             }
         }
 
-        private void CheckReminderTimeOption(ref Reminder r)
+        public void AddReminderTime(ulong guildId, int id, TimeSpan time)
         {
-            // check reminder time options
-            ReminderTimeOption alreadyPassed = r.ReminderTimeOption;
-
-            // check to see that the options that were asked for haven't ended already
-            foreach (var value in Enum.GetValues(typeof(ReminderTimeOption)))
+            var col = m_database.GetCollection<Reminder>("Reminders");
+            var match = col.Find(x => x.GuildId == guildId && x.ID == id);
+            foreach(Reminder r in match)
             {
-                if (((r.ReminderTimeOption & (ReminderTimeOption)value) > 0)
-                    && CheckTimeOption(r.ReminderTime, (ReminderTimeOption)value))
-                {
-                    alreadyPassed ^= (ReminderTimeOption)value;
-                }
+                r.AddTimeSpan(time);
+                col.Update(r);
             }
-
-            r.ReminderTimeOption = alreadyPassed;
         }
 
-        // add a reminder
-        public Reminder AddReminder(ulong guildId, ulong channelId, ulong authorId, string text, DateTime time,
-            ReminderTimeOption timeOption = ReminderTimeOption.ThirtyMinuteWarning | ReminderTimeOption.OnReminderExpire | ReminderTimeOption.FiveMinuteWarning, 
-            ReminderType type = ReminderType.Author)
+        public void RemoveReminder(ulong guildId, int id)
         {
-            if(m_Reminders != null)
+            var y = m_database.GetCollection<Reminder>("Reminders")
+                .Delete(x => x.GuildId == guildId && x.ID == id);
+        }
+
+        public Reminder AddReminder(ulong guildId, ulong channelID,
+            ulong authorId, string text, DateTime time,
+            ReminderType type = ReminderType.Channel)
+        {
+            Reminder r = new Reminder()
             {
-                if(m_Reminders.Reminders != null)
-                {
-                    m_Reminders.ReminderCounter++;
+                GuildId = guildId,
+                TextChannelId = channelID,
+                AuthorId = authorId,
+                ReminderText = text,
+                ReminderTime = time,
+                ReminderType = type
+            };
+            r.SetDefaultTimeSpans();
 
-                    // the date given has already passed
-                    if (DateTime.Now.CompareTo(time) > 0) return null;
+            m_database.GetCollection<Reminder>("Reminders")
+                .Insert(r);
 
-                    // create a new reminder
-                    Reminder n = new Reminder()
-                    {
-                        GuildId = guildId,
-                        TextChannelId = channelId,
-                        AuthorId = authorId,
-                        ReminderText = text,
-                        ReminderTime = time,
-                        ReminderTimeOption = timeOption,
-                        ReminderType = type,
-                        ReminderId = m_Reminders.ReminderCounter
-                    };
-
-                    CheckReminderTimeOption(ref n);
-
-                    //Console.WriteLine("Adding a new one, but already passed value was " + alreadyPassed);
-
-                    // check that the Reminder time isn't in the past
-                    // and check that the time options specified haven't passed already
-
-                    m_Reminders.Reminders.Add(n);
-
-                    SaveReminders();
-
-                    return n;
-                }
-            }
-            return null;
+            return r;
         }
-
-        private DateTime AdjustDateTimeFromOption(DateTime time, ReminderTimeOption option)
-        {
-            switch(option)
-            {
-                case ReminderTimeOption.OneDayWarning:
-                    return time.AddDays(-1);
-                case ReminderTimeOption.OnReminderExpire:
-                    return time;
-                case ReminderTimeOption.SixHourWarning:
-                    return time.AddHours(-6);
-                case ReminderTimeOption.ThirtyMinuteWarning:
-                    return time.AddMinutes(-30);
-                case ReminderTimeOption.ThreeDayWarning:
-                    return time.AddDays(-3);
-                case ReminderTimeOption.ThreeHoursOverdue:
-                    return time.AddHours(3);
-                case ReminderTimeOption.TwoHourWarning:
-                    return time.AddHours(-2);
-                case ReminderTimeOption.TenMinuteWarning:
-                    return time.AddMinutes(-10);
-                case ReminderTimeOption.FiveMinuteWarning:
-                    return time.AddMinutes(-5);
-            }
-            return time;
-        }
-
-        /// <summary>
-        /// Checks the following conditions
-        /// A given time option that was asked for is true
-        /// The reminder for this time hasn't been done already
-        /// and then check if its passed
-        /// </summary>
-        /// <param name="r"></param>
-        /// <param name="option"></param>
-        /// <returns></returns>
-        private bool CheckIfReminderNeedsToBeSent(Reminder r, ReminderTimeOption option)
-        {
-            //return ((r.ReminderTimeOption & option) > 0) // check that this option was asked for
-            //    && !((r.ReminderTimeStatus |= option) > 0) // check that it hasn't been done already
-            //    && CheckTimeOption(r.ReminderTime, option); // check the time
-            //Console.WriteLine("Time option value {0} time status value {1}", r.ReminderTimeOption, "");
-            bool a = (r.ReminderTimeOption & option) > 0;
-            //bool b = ((r.ReminderTimeStatus ^ option) > 0);
-            bool b = true;
-            bool c= CheckTimeOption(r.ReminderTime, option);
-            return a && b && c;
-        }
-
-        private bool CheckTimeOption(DateTime reminderTime, ReminderTimeOption option)
-        {
-            return DateTime.Now.CompareTo(AdjustDateTimeFromOption(reminderTime, option)) > 0;
-        }
-
-        // check the states of all of our reminders
-        private async void CheckReminderState()
-        {
-            // debug log when we check states
-            await Bot.Log(new Discord.LogMessage(Discord.LogSeverity.Debug, "ReminderService", "Checking reminder state."));
-
-            if(m_Reminders != null && m_Reminders.Reminders != null && m_Reminders.Reminders.Count != 0)
-            {
-                // loop through all of our reminders
-                foreach(var r in m_Reminders.Reminders)
-                {
-                    //Console.WriteLine("checking a reminder, options that need to be sent are: " + r.ReminderTimeOption);
-
-                    bool sentAReminderOnThisPass = false;
-                    // iterate through our time options
-                    foreach(short value in Enum.GetValues(typeof(ReminderTimeOption)))
-                    {
-                        // check to see if each of the time options have passed
-                        if (CheckIfReminderNeedsToBeSent(r, (ReminderTimeOption)value) && !sentAReminderOnThisPass)
-                        {
-                            sentAReminderOnThisPass = true;
-                            //Console.WriteLine("aaaaaaa");
-                            SendReminder(r, (ReminderTimeOption)value);
-                        }
-                    }
-                }
-
-                // remove all that are done
-                //m_Reminders.Reminders.RemoveAll(x => x.ReminderTimeOption == x.ReminderTimeStatus);
-                m_Reminders.Reminders.RemoveAll(x => x.ReminderTimeOption == 0);
-                // save our changes after polling
-                SaveReminders();
-            }
-
-        }
-
-        // sends a reminder based on the specific time option given
-        private async void SendReminder(Reminder r, ReminderTimeOption option)
+        
+        private async void SendReminder(Reminder r, TimeSpan expired)
         {
             // build the embed
             var embed = new EmbedBuilder();
 
             embed.WithAuthor(m_client.CurrentUser);
 
-            embed.WithTitle(GetReminderTitle(option));
-            //Console.WriteLine("sending " + GetReminderTitle(option) + DateTime.Now.ToString());
+            string title;
+            if(expired.Equals(TimeSpan.Zero))
+            {
+                title = "Reminder Expired";
+            }
+            else
+            {
+                title = expired.ToString() + " Remains";
+            }
+            embed.WithTitle(title);
+            
             embed.WithCurrentTimestamp();
 
             // get the author username
             var user = m_client.GetUser(r.AuthorId);
-            if(user != null)
+            if (user != null)
                 embed.WithFooter("Reminder created by " + user.Username);
 
             string description;
 
-            if (option == ReminderTimeOption.OnReminderExpire || option == ReminderTimeOption.ThreeHoursOverdue)
-            {
-                description = string.Format("Reminder for {0:g}\n**Message**:\n{1}", r.ReminderTime, r.ReminderText, DateTime.Now.Subtract(r.ReminderTime));
-            }
-            else
-            {
-                description = string.Format("Reminder for {0:g}\n{2} remains.\n**Message**:\n{1}", r.ReminderTime, r.ReminderText, DateTime.Now.Subtract(r.ReminderTime));
-            }
+            //if (option == ReminderTimeOption.OnReminderExpire || option == ReminderTimeOption.ThreeHoursOverdue)
+            //{
+            //    description = string.Format("Reminder for {0:g}\n**Message**:\n{1}", r.ReminderTime, r.ReminderText, DateTime.Now.Subtract(r.ReminderTime));
+            //}
+            //else
+            //{
+            //    description = string.Format("Reminder for {0:g}\n{2} remains.\n**Message**:\n{1}", r.ReminderTime, r.ReminderText, DateTime.Now.Subtract(r.ReminderTime));
+            //}
+
+            description = string.Format("Reminder for {0:g} ({2} remains.)\n\n{1}", r.ReminderTime, r.ReminderText, expired);
 
             string mentionStr = "";
 
@@ -308,88 +250,25 @@ namespace CSSBot.Reminders
             if (socketChannel == null) return;
 
             // send the message
-            await socketChannel.SendMessageAsync(mentionStr, false, embed.Build());
-
-            //// and now set that bit true
-            //r.ReminderTimeStatus |= option;
-            // set that bit false
-            r.ReminderTimeOption ^= option;
-        }
-
-        private string GetReminderTitle(ReminderTimeOption option)
-        {
-            switch(option)
-            {
-                case ReminderTimeOption.OneDayWarning:
-                    return "One Day Remaining";
-                case ReminderTimeOption.OnReminderExpire:
-                    return "Reminder Expired";
-                case ReminderTimeOption.SixHourWarning:
-                    return "Six Hours Remaining";
-                case ReminderTimeOption.ThirtyMinuteWarning:
-                    return "Thirty Minutes Remaining";
-                case ReminderTimeOption.ThreeDayWarning:
-                    return "Three Days Remaining";
-                case ReminderTimeOption.ThreeHoursOverdue:
-                    return "Three Hours Overdue";
-                case ReminderTimeOption.TwoHourWarning:
-                    return "Two Hours Remaining";
-                case ReminderTimeOption.FiveMinuteWarning:
-                    return "Five Minutes Remaining";
-                case ReminderTimeOption.TenMinuteWarning:
-                    return "Ten Minutes Remaining";
-            }
-            return "Reminder";
-        }
-
-        /// <summary>
-        /// Load the list of reminders from the file
-        /// </summary>
-        private void LoadReminders()
-        {
             try
             {
-                XmlSerializer ser = new XmlSerializer(typeof(ReminderList));
-                using (FileStream fs = new FileStream(Program.GlobalConfiguration.Data.ReminderFilePath, FileMode.Open))
+                var msg = await socketChannel.SendMessageAsync(mentionStr, false, embed.Build());
+                if (r.LastReminderMessageId.HasValue)
                 {
-                    //m_Reminders = ser.Deserialize(fs) as ReminderList;
-                    var v = ser.Deserialize(fs);
-                    m_Reminders = v as ReminderList;
+                    // get the id of the last reminder message
+                    // and delete the message
+                    var message = await (m_client.GetGuild(r.GuildId)
+                        .GetChannel(r.TextChannelId) as SocketTextChannel)
+                        .GetMessageAsync(r.LastReminderMessageId.Value) as SocketMessage;
+                    await message.DeleteAsync();
                 }
+
+                r.LastReminderMessageId = msg.Id;
             }
             catch(Exception e)
             {
-                Bot.Log(
-                    new Discord.LogMessage(Discord.LogSeverity.Warning, "ReminderService", "Got exception trying to load.", e));
-            }
 
-            if(m_Reminders == null)
-            {
-                m_Reminders = new ReminderList();
             }
         }
-
-        private void SaveReminders()
-        {
-            try
-            {
-                XmlSerializer ser = new XmlSerializer(typeof(ReminderList));
-                using (var fs = new FileStream(Program.GlobalConfiguration.Data.ReminderFilePath, FileMode.Create))
-                {
-                    using (var writer = new StreamWriter(fs))
-                    {
-                        ser.Serialize(writer, m_Reminders);
-                        writer.Flush();
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Bot.Log( 
-                    new Discord.LogMessage(Discord.LogSeverity.Warning, "ReminderService", "Got exception trying to save.", e));
-            }
-        }
-
-
     }
 }
