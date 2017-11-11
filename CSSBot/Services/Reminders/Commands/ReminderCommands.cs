@@ -76,24 +76,21 @@ namespace CSSBot
             await ReplyAsync(ret);
         }
 
-        //[Command("UpdateFrequency", RunMode = RunMode.Async)]
-        //[Alias("UpdateAlerts")]
-        //[RequireContext(ContextType.Guild)]
-        //[RequireUserPermission(ChannelPermission.ManageMessages)]
-        //public async Task UpdateReminderFrequency([Name("ReminderID")]int id, [Name("Option Text")]params ReminderTimeOption[] options)
-        //{
-        //    var reminder = _reminderService.ActiveReminders.Find(x => x.GuildId == Context.Guild.Id && x.ID == id);
+        [Command("AddReminderTimespan", RunMode = RunMode.Async)]
+        public async Task AddReminderTimespan(int id, TimeSpan ts)
+        {
+            var reminder = _reminderService.GetReminder(Context.Guild.Id, id);
+            reminder.AddTimeSpan(ts);
+            await ReplyAsync("Ok!");
+        }
 
-        //    if (reminder == null)
-        //    {
-        //        await ReplyAsync("I couldn't find any active reminders by the supplied ID.");
-        //    }
-        //    else
-        //    {
-        //        _reminderService.UpdateReminder(Context.Guild.Id, id, option: MergeTimeOptionsTogether(options));
-        //        await ReplyAsync("Reminder updated.");
-        //    }
-        //}
+        [Command("RemoveReminderTimespan", RunMode = RunMode.Async)]
+        public async Task RemoveReminderTimespan(int id, TimeSpan ts)
+        {
+            var reminder = _reminderService.GetReminder(Context.Guild.Id, id);
+            reminder.RemoveTimeSpan(ts);
+            await ReplyAsync("Ok!");
+        }
 
         [Command("UpdateText", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
