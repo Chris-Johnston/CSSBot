@@ -79,17 +79,33 @@ namespace CSSBot
         [Command("AddReminderTimespan", RunMode = RunMode.Async)]
         public async Task AddReminderTimespan(int id, TimeSpan ts)
         {
+            Console.WriteLine(ts);
             var reminder = _reminderService.GetReminder(Context.Guild.Id, id);
-            reminder.AddTimeSpan(ts);
-            await ReplyAsync("Ok!");
+            if (reminder != null)
+            {
+                reminder.AddTimeSpan(ts);
+                await ReplyAsync("Ok!");
+            }
+            else
+            {
+                await ReplyAsync("Couldn't find a reminder by that ID.");
+            }
         }
 
         [Command("RemoveReminderTimespan", RunMode = RunMode.Async)]
         public async Task RemoveReminderTimespan(int id, TimeSpan ts)
         {
+            Console.WriteLine(ts);
             var reminder = _reminderService.GetReminder(Context.Guild.Id, id);
-            reminder.RemoveTimeSpan(ts);
-            await ReplyAsync("Ok!");
+            if (reminder != null)
+            {
+                reminder.RemoveTimeSpan(ts);
+                await ReplyAsync("Ok!");
+            }
+            else
+            {
+                await ReplyAsync("Couldn't find a reminder by that ID.");
+            }
         }
 
         [Command("UpdateText", RunMode = RunMode.Async)]
