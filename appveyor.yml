@@ -11,4 +11,4 @@ build:
   project: CSSBot.sln
   verbosity: minimal
 test_script:
-- cmd: dotnet test
+- cmd: dotnet test CSSBot.Tests\CSSBot.Tests.csproj
