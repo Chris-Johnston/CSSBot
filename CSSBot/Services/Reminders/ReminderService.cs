@@ -245,7 +245,7 @@ namespace CSSBot.Reminders
             if (r.ReminderTimeSpanTicks.Count > 1)
             {
                 // list the remaining reminder timespans
-                description += "\nNext reminder notifications:\n";
+                description += "\n\nNext reminder notifications:\n";
                 foreach (TimeSpan ts in r.ReminderTimeSpans)
                     description += ts.ToString() + "\n";
             }

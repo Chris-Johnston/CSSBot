@@ -188,7 +188,7 @@ namespace CSSBot
                     timealerts += ts.ToString() + "\n";
 
                 string description = string.Format(
-                    "**{0:g}**\n{1}\nRemaining Alerts:\n{2}",
+                    "**{0:g}**\n{1}\n\nRemaining Alerts:\n{2}",
                     reminder.ReminderTime, reminder.ReminderText, timealerts);
 
                 builder.WithDescription(description);
