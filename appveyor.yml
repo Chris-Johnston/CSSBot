@@ -10,4 +10,5 @@ before_build:
 build:
   project: CSSBot.sln
   verbosity: minimal
-test: off
+test_script:
+- cmd: dotnet test
