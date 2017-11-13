@@ -78,6 +78,7 @@ namespace CSSBot.Reminders.Models
         {
             if(!ContainsTimeSpan(ts))
                 ReminderTimeSpanTicks.Add(ts.Ticks);
+            CheckExpiredTimeSpan();
         }
 
         /// <summary>
@@ -112,10 +113,9 @@ namespace CSSBot.Reminders.Models
                     {
                         mostRecentlyExpired = ts;
                     }
+                    // remove expired
+                    toRemove.Add(ts);
                 }
-
-                // remove expired 
-                toRemove.Add(ts);
             }
 
             // remove our timespans that expired

@@ -17,7 +17,7 @@ namespace CSSBot.Reminders
     public class ReminderService
     {
         // how long in ms to poll
-        private const int PollingRate = 60000;
+        private const int PollingRate = 30000;
         private Timer m_ReminderTimer;
         private LiteDatabase m_database;
         private readonly DiscordSocketClient m_client;
@@ -61,6 +61,8 @@ namespace CSSBot.Reminders
 
         private void CheckReminders()
         {
+            Bot.Log(new LogMessage(LogSeverity.Info, "Reminder", "Polling the reminder service."));
+
             // loop through all of the reminders
             // and get the most recently expired
             // reminder
@@ -73,6 +75,7 @@ namespace CSSBot.Reminders
             var reminders = m_database.GetCollection<Reminder>("Reminders");
             foreach(var r in reminders.FindAll())
             {
+                // get the last expired timespan if it exists
                 TimeSpan? ts = r.CheckExpiredTimeSpan();
                 if(ts.HasValue)
                 {
@@ -91,6 +94,14 @@ namespace CSSBot.Reminders
                     // then delete this reminder
                     // actually leave it for now
                 }
+
+                // double check for our error case whee we forgot to remove ones 
+                // that contained no reminders
+                if (r.ReminderTimeSpanTicks.Count == 0)
+                    expired.Add(r);
+
+                // update the reminder in case it changes
+                UpdateReminder(r);
             }
 
             foreach( var r in expired)
@@ -118,6 +129,12 @@ namespace CSSBot.Reminders
         //       CheckReminderState();
         //   }, null, 5000, PollingRate);
         //}
+
+        public void UpdateReminder(Reminder r)
+        {
+            var coll = m_database.GetCollection<Reminder>("Reminders");
+            coll.Update(r);
+        }
 
         public void UpdateReminder(ulong guildId, int id, string text = null, DateTime? time = null, ReminderType? type = null)
         {
@@ -178,6 +195,8 @@ namespace CSSBot.Reminders
                 ReminderType = type
             };
             r.SetDefaultTimeSpans();
+            // remove the expired ones so we aren't spammed when the reminder is made
+            r.CheckExpiredTimeSpan();
 
             m_database.GetCollection<Reminder>("Reminders")
                 .Insert(r);
@@ -221,7 +240,15 @@ namespace CSSBot.Reminders
             //    description = string.Format("Reminder for {0:g}\n{2} remains.\n**Message**:\n{1}", r.ReminderTime, r.ReminderText, DateTime.Now.Subtract(r.ReminderTime));
             //}
 
-            description = string.Format("Reminder for {0:g} ({2} remains.)\n\n{1}", r.ReminderTime, r.ReminderText, expired);
+            description = string.Format("Reminder for {0:g} ({2} remains.)\n\n{1}", r.ReminderTime, r.ReminderText, r.ReminderTime - DateTime.Now);
+
+            if (r.ReminderTimeSpanTicks.Count > 1)
+            {
+                // list the remaining reminder timespans
+                description += "\nNext reminder notifications:\n";
+                foreach (TimeSpan ts in r.ReminderTimeSpans)
+                    description += ts.ToString() + "\n";
+            }
 
             string mentionStr = "";
 
@@ -235,7 +262,9 @@ namespace CSSBot.Reminders
 
             description += "\n\n" + mentionStr;
 
+            embed.WithColor(new Color(255, 204, 77));
             embed.WithDescription(description);
+            embed.WithFooter("Reminder ID " + r.ID);
 
             // get the guild
             var guild = m_client.GetGuild(r.GuildId);

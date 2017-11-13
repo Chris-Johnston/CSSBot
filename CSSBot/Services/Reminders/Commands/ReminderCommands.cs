@@ -77,14 +77,17 @@ namespace CSSBot
         }
 
         [Command("AddReminderTimespan", RunMode = RunMode.Async)]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task AddReminderTimespan(int id, TimeSpan ts)
         {
-            Console.WriteLine(ts);
             var reminder = _reminderService.GetReminder(Context.Guild.Id, id);
             if (reminder != null)
             {
                 reminder.AddTimeSpan(ts);
-                await ReplyAsync("Ok!");
+                _reminderService.UpdateReminder(reminder);
+                //await ReplyAsync("Ok, I added the time " + ts.ToString() + ".");
+                await GetReminderById(id);
             }
             else
             {
@@ -93,14 +96,17 @@ namespace CSSBot
         }
 
         [Command("RemoveReminderTimespan", RunMode = RunMode.Async)]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+        [RequireContext(ContextType.Guild)]
         public async Task RemoveReminderTimespan(int id, TimeSpan ts)
         {
-            Console.WriteLine(ts);
             var reminder = _reminderService.GetReminder(Context.Guild.Id, id);
             if (reminder != null)
             {
                 reminder.RemoveTimeSpan(ts);
-                await ReplyAsync("Ok!");
+                _reminderService.UpdateReminder(reminder);
+                //await ReplyAsync("Ok!");
+                await GetReminderById(id);
             }
             else
             {
@@ -174,11 +180,18 @@ namespace CSSBot
                 builder.WithAuthor(Context.Client.CurrentUser);
                 builder.WithColor(new Color(255, 204, 77));
 
-                builder.WithTitle(string.Format("Reminder `#{0}`", reminder.ID));
+                builder.WithTitle(string.Format("Reminder #{0}", reminder.ID));
+                builder.WithCurrentTimestamp();
+                builder.WithFooter("Type: " + reminder.ReminderType);
+                string timealerts = "";
+                foreach (var ts in reminder.ReminderTimeSpans)
+                    timealerts += ts.ToString() + "\n";
 
-                builder.AddField(reminder.ReminderTime.ToString("g"),
-                    string.Format("{0}\nType: {1}", reminder.ReminderText, reminder.ReminderType));
+                string description = string.Format(
+                    "**{0:g}**\n{1}\nRemaining Alerts:\n{2}",
+                    reminder.ReminderTime, reminder.ReminderText, timealerts);
 
+                builder.WithDescription(description);
                 await ReplyAsync("", false, builder.Build());
             }
         }
