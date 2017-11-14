@@ -39,7 +39,7 @@ namespace CSSBot.Counters.Commands
             // add a new counter (check that it isn't already one that exists)
             // and reply back saying that it has been added
 
-            var matches = _countService.Counters.FindOne(x => x.Text.ToLower().Equals(counterText.ToLower()));
+            var matches = _countService.GetCounterByText(counterText, Context.Guild.Id, Context.Channel.Id);
 
             if(matches == null)
             {
@@ -69,7 +69,8 @@ namespace CSSBot.Counters.Commands
         public async Task Increment([Name("Name")]string counterText)
         {
             // increment a counter
-            var match = _countService.Counters.FindOne(x => x.Text.ToLower().Equals(counterText.ToLower()));
+            var match = _countService.GetCounterByText(counterText, Context.Guild.Id, Context.Channel.Id);
+
             if (match != null)
             {
                 match.Increment();
@@ -91,12 +92,12 @@ namespace CSSBot.Counters.Commands
         public async Task Decrement([Name("Name")]string counterText)
         {
             // decrement a counter
-            var match = _countService.Counters.FindOne(x => x.Text.ToLower().Equals(counterText.ToLower()));
+            var match = _countService.GetCounterByText(counterText, Context.Guild.Id, Context.Channel.Id);
             if (match != null)
             {
                 match.Decrement();
                 // update our DB
-                _countService.Counters.Update(match);
+                _countService.UpdateCounter(match);
 
                 await ReplyAsync(string.Format("`{0}` : {1}", match.Text, match.Count));
             }
@@ -168,12 +169,12 @@ namespace CSSBot.Counters.Commands
         public async Task SetCounter([Name("Name")]string text, [Name("Value")]int value)
         {
             // set a counter value
-            var match = _countService.Counters.FindOne(x => x.Text.ToLower().Equals(text.ToLower()));
+            var match = _countService.GetCounterByText(text, Context.Guild.Id, Context.Channel.Id);
             if (match != null)
             {
                 match.SetCount(value);
                 // update our DB
-                _countService.Counters.Update(match);
+                _countService.UpdateCounter(match);
 
                 await ReplyAsync(string.Format("`{0}` : {1}", match.Text, match.Count));
             }
