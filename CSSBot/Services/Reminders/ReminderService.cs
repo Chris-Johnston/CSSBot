@@ -292,7 +292,11 @@ namespace CSSBot.Reminders
                     await message.DeleteAsync();
                 }
 
+                // set the LastReminderMessageId
                 r.LastReminderMessageId = msg.Id;
+
+                // actually update this back in the LiteDB
+                UpdateReminder(r);
             }
             catch(Exception e)
             {
