@@ -267,7 +267,7 @@ namespace CSSBot
         /// </summary>
         /// <returns></returns>
         [Command("UserReminders", RunMode = RunMode.Async)]
-        [Alias("MyReminders", "ListUser")]
+        [Alias("MyReminders", "ListUser", "list")]
         [RequireContext(ContextType.Guild)]
         [Summary("Gets all the reminders authored by the specified user, or yourself if unspecified.")]
         public async Task ListUserReminders(IGuildUser user = null)
