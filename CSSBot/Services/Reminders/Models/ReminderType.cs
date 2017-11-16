@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace CSSBot.Reminders
+namespace CSSBot.Reminders.Models
 {
     /// <summary>
     /// Who should be notified when the reminder is finished?

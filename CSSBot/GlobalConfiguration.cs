@@ -15,7 +15,7 @@ namespace CSSBot
     public class GlobalConfiguration
     {
         // we shouldn't need to be changing this often, if at all
-        public const char CommandPrefix = '?';
+        public const char CommandPrefix = '.';
 
         // the path to the configuration file
         private string m_ConfigFilePath = null;

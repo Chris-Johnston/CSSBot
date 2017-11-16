@@ -16,12 +16,7 @@ namespace CSSBot
         [XmlElementAttribute("ConnectionToken")]
         public string ConnectionToken { get; set; }
         
-        // the path to the reminder file
-        [XmlElement("ReminderFilePath")]
-        public string ReminderFilePath { get; set; }
-
-        // the path to the counter file
-        [XmlElement("CounterFilePath")]
-        public string CounterFilePath { get; set; }
+        [XmlElement("LiteDatabasePath")]
+        public string LiteDatabasePath { get; set; }
     }
 }
