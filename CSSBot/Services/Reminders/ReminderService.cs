@@ -286,10 +286,19 @@ namespace CSSBot.Reminders
                 {
                     // get the id of the last reminder message
                     // and delete the message
-                    var message = await (m_client.GetGuild(r.GuildId)
-                        .GetChannel(r.TextChannelId) as SocketTextChannel)
-                        .GetMessageAsync(r.LastReminderMessageId.Value) as SocketMessage;
-                    await message.DeleteAsync();
+
+                    var g = m_client.GetGuild(r.GuildId);
+                    var c= g.GetChannel(r.TextChannelId) as ITextChannel;
+                    var message = await c.GetMessageAsync(r.LastReminderMessageId.Value) as IMessage;
+                    if(message == null)
+                    {
+                        await Bot.Log(new LogMessage(LogSeverity.Warning, "ReminderService",
+                            "Tried to delete an expired reminder notification, but got casting error."));
+                    }
+                    else
+                    {
+                        await message.DeleteAsync();
+                    } 
                 }
 
                 // set the LastReminderMessageId
@@ -300,7 +309,9 @@ namespace CSSBot.Reminders
             }
             catch(Exception e)
             {
-
+                // catch permissions issues that may result from sending a message or deleting the old one
+                // if we catch, then at lesat update the reminder in the db
+                UpdateReminder(r);
             }
         }
     }
