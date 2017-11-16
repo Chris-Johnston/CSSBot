@@ -25,11 +25,12 @@ namespace CSSBot
         /// Adds a reminder
         /// </summary>
         /// <returns></returns>
-        [Command("Add", RunMode = RunMode.Async), Alias("Create", "+"), RequireContext(ContextType.Guild)]
+        [Command("Add", RunMode = RunMode.Async)]
+        [Alias("Create", "+", "New", "AddReminder", "CreateReminder", "NewReminder")]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task AddReminder([Name("Time")]DateTime reminderTime, [Name("Reminder"), Remainder()]string ReminderText)
         {
-            //todo implement ReminderTimeOption
-            //todo implement ReminderType
             var added = _reminderService.AddReminder(Context.Guild.Id, Context.Channel.Id, Context.User.Id,
                 ReminderText, reminderTime);
 
@@ -68,6 +69,7 @@ namespace CSSBot
         }
         
         [Command("ListTypeOptions")]
+        [Alias("ListTypes", "ListType")]
         public async Task ListTypes()
         {
             string ret = "The following type options are available: ";
@@ -77,6 +79,7 @@ namespace CSSBot
         }
 
         [Command("AddReminderTimespan", RunMode = RunMode.Async)]
+        [Alias("AddTimespan", "AddTime", "AddUpdateTime", "AddUpdate")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task AddReminderTimespan(int id, TimeSpan ts)
@@ -96,6 +99,7 @@ namespace CSSBot
         }
 
         [Command("RemoveReminderTimespan", RunMode = RunMode.Async)]
+        [Alias("RemoveTimespan", "RemoveTime", "RemoveUpdateTime", "RemoveUpdate")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [RequireContext(ContextType.Guild)]
         public async Task RemoveReminderTimespan(int id, TimeSpan ts)
@@ -115,6 +119,7 @@ namespace CSSBot
         }
 
         [Command("UpdateText", RunMode = RunMode.Async)]
+        [Alias("ChangeText", "SetText")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(ChannelPermission.ManageMessages)]
         public async Task UpdateReminderText([Name("ReminderID")]int id, [Name("Text"), Remainder()]string text)
@@ -124,6 +129,7 @@ namespace CSSBot
         }
 
         [Command("UpdateTime", RunMode = RunMode.Async)]
+        [Alias("ChangeTime")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(ChannelPermission.ManageMessages)]
         public async Task UpdateReminderTime([Name("ReminderID")]int id, [Name("Time")]DateTime time)
@@ -133,6 +139,7 @@ namespace CSSBot
         }
 
         [Command("UpdateType", RunMode = RunMode.Async)]
+        [Alias("ChangeType")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(ChannelPermission.ManageMessages)]
         public async Task UpdateReminderType([Name("ReminderID")]int id, [Name("Type")]ReminderType type)
@@ -146,7 +153,7 @@ namespace CSSBot
         /// </summary>
         /// <returns></returns>
         [Command("DismissReminder", RunMode = RunMode.Async)]
-        [Alias("Dismiss", "End")]
+        [Alias("Dismiss", "End", "Remove", "Delete")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [Summary("Dismisses a reminder for this server.")]
