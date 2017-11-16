@@ -231,16 +231,15 @@ namespace CSSBot.Reminders
 
             string description;
 
-            //if (option == ReminderTimeOption.OnReminderExpire || option == ReminderTimeOption.ThreeHoursOverdue)
-            //{
-            //    description = string.Format("Reminder for {0:g}\n**Message**:\n{1}", r.ReminderTime, r.ReminderText, DateTime.Now.Subtract(r.ReminderTime));
-            //}
-            //else
-            //{
-            //    description = string.Format("Reminder for {0:g}\n{2} remains.\n**Message**:\n{1}", r.ReminderTime, r.ReminderText, DateTime.Now.Subtract(r.ReminderTime));
-            //}
-
-            description = string.Format("Reminder for {0:g} ({2} remains.)\n\n{1}", r.ReminderTime, r.ReminderText, r.ReminderTime - DateTime.Now);
+            // when reminder expire, don't include the timespan difference between now and remindertime
+            if (expired == TimeSpan.Zero)
+            {
+                description = string.Format("Reminder for {0:g}\n\n{1}", r.ReminderTime, r.ReminderText);
+            }
+            else
+            {
+                description = string.Format("Reminder for {0:g} ({2} remains.)\n\n{1}", r.ReminderTime, r.ReminderText, r.ReminderTime - DateTime.Now);
+            }
 
             if (r.ReminderTimeSpanTicks.Count > 1)
             {
@@ -250,17 +249,17 @@ namespace CSSBot.Reminders
                     description += ts.ToString() + "\n";
             }
 
+            description = description.TrimEnd();
+
             string mentionStr = "";
 
-            // include the person we were supposed to ping
+            // get the person that we are supposed to ping
             if (r.ReminderType == ReminderType.Author && user != null)
                 mentionStr = user.Mention;
             else if (r.ReminderType == ReminderType.Channel)
                 mentionStr = "@here";
             else if (r.ReminderType == ReminderType.Guild)
                 mentionStr = "@everyone";
-
-            description += "\n\n" + mentionStr;
 
             embed.WithColor(new Color(255, 204, 77));
             embed.WithDescription(description);
