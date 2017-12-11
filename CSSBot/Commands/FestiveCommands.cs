@@ -47,7 +47,7 @@ namespace CSSBot.Commands
 
         private string GetRandom()
         {
-            return _xmasOnlyEmoji[r.Next(_FestiveEmoji.Length)];
+            return _xmasOnlyEmoji[r.Next(_xmasOnlyEmoji.Length)];
         }
 
         [Command("ToWinterFestive")]
