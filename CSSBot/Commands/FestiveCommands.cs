@@ -66,11 +66,11 @@ namespace CSSBot.Commands
 
                 if (user.Nickname != null && inRole)
                 {
-                    // blank out the festive emoji from the names
+                    // replace thanksgiving emojis with xmas ones
                     string newNick = user.Nickname;
-                    foreach (string s in _FestiveEmoji)
+                    foreach (string s in new string[] { "🦃", "🍁" } )
                     {
-                        newNick = newNick.Replace(s, "");
+                        newNick = newNick.Replace(s, GetRandom());
                     }
 
                     try
@@ -105,11 +105,11 @@ namespace CSSBot.Commands
 
                 if(user.Nickname != null && inRole)
                 {
-                    // replace thanksgiving emojis with xmas ones
+                    // blank out
                     string newNick = user.Nickname;
-                    foreach (string s in new string[] { "🦃", "🍁" })
+                    foreach (string s in _FestiveEmoji)
                     {
-                        newNick = newNick.Replace(s, GetRandom());
+                        newNick = newNick.Replace(s, "");
                     }
 
                     try
