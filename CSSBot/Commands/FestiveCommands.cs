@@ -19,6 +19,11 @@ namespace CSSBot.Commands
             "🦃", "🍁"
         };
 
+        private string[] _xmasOnlyEmoji = new string[]
+        {
+            "❄️", "☃️", "⛄", "⛄", "🎄", "🕎", "✡️"
+        };
+
         private bool CheckDate()
         {
             // allow for month 11 - 1, however january is really pushing it
@@ -42,12 +47,51 @@ namespace CSSBot.Commands
 
         private string GetRandom()
         {
-            return _FestiveEmoji[r.Next(_FestiveEmoji.Length)];
+            return _xmasOnlyEmoji[r.Next(_xmasOnlyEmoji.Length)];
         }
+
+        [Command("ToWinterFestive")]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.ChangeNickname)]
+        public async Task FestiveToXmas(IRole role)
+        {
+            foreach (IGuildUser user in await Context.Guild.GetUsersAsync())
+            {
+                bool inRole = false;
+                foreach (ulong id in user.RoleIds)
+                {
+                    if (id == role.Id)
+                        inRole = true;
+                }
+
+                if (user.Nickname != null && inRole)
+                {
+                    // replace thanksgiving emojis with xmas ones
+                    string newNick = user.Nickname;
+                    foreach (string s in new string[] { "🦃", "🍁" } )
+                    {
+                        newNick = newNick.Replace(s, GetRandom());
+                    }
+
+                    try
+                    {
+                        await user.ModifyAsync(x =>
+                        {
+                            x.Nickname = newNick;
+                        });
+                    }
+                    catch (Exception e)
+                    {
+                        // permission exceptions
+                    }
+                }
+            }
+        }
+
 
         [Command("UnFestive")]
         [RequireContext(ContextType.Guild)]
-        [RequireUserPermission(GuildPermission.ChangeNickname)]
+        [RequireOwner]
         public async Task UnFestive(IRole role)
         {
             foreach(IGuildUser user in await Context.Guild.GetUsersAsync())
@@ -61,15 +105,16 @@ namespace CSSBot.Commands
 
                 if(user.Nickname != null && inRole)
                 {
-                    // blank out the festive emoji from the names
+                    // blank out
                     string newNick = user.Nickname;
-                    foreach(string s in _FestiveEmoji)
+                    foreach (string s in _FestiveEmoji)
                     {
                         newNick = newNick.Replace(s, "");
                     }
 
                     try
                     {
+                        // update nickname
                         await user.ModifyAsync(x =>
                        {
                            x.Nickname = newNick;
