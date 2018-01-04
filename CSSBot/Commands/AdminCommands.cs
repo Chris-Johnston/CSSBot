@@ -14,6 +14,7 @@ namespace CSSBot.Commands
     // commands for administration by the bot owner
     [Group("Admin")]
     [RequireOwner()]
+    [Remarks("These commands are for bot administration and are only allowed to be used by the bot owner.")]
     public class AdminCommands : ModuleBase
     {
         private async Task backupMessage(IMessage message, string path)
@@ -27,21 +28,29 @@ namespace CSSBot.Commands
 
             File.WriteAllText(Path.Combine(path, $"pin{message.Id}.txt"), fileContent);
 
-            foreach (var attachment in message.Attachments)
+            await saveMessageAttachments(message, path);
+        }
+
+        private async Task saveMessageAttachments(IMessage message, string path)
+        {
+            if (message.Attachments.Count > 0)
             {
                 // make a directory for the attachments
-                string attachPath = Path.Combine(path, $"attachments{message.Id}");
+                string attachPath = Path.Combine(path, $"attachments");
                 var attachInfo = Directory.CreateDirectory(attachPath);
-
-                using (var c = new HttpClient())
+                
+                foreach (var attachment in message.Attachments)
                 {
-                    // download the attachments
-                    // and save them to our directory
-                    var stream = await c.GetStreamAsync(attachment.Url);
-                    using (var file = new FileStream(Path.Combine(attachPath, $"{attachment.Id}{attachment.Filename}"), FileMode.Create))
+                    using (var c = new HttpClient())
                     {
-                        // populate the file
-                        stream.CopyTo(file);
+                        // download the attachments
+                        // and save them to our directory
+                        var stream = await c.GetStreamAsync(attachment.Url);
+                        using (var file = new FileStream(Path.Combine(attachPath, $"{attachment.Id}{attachment.Filename}"), FileMode.Create))
+                        {
+                            // populate the file
+                            stream.CopyTo(file);
+                        }
                     }
                 }
             }
@@ -58,24 +67,7 @@ namespace CSSBot.Commands
 
             File.WriteAllText(Path.Combine(pinPath, $"pin{message.Id}.txt"), fileContent);
 
-            foreach (var attachment in message.Attachments)
-            {
-                // make a directory for the attachments
-                string attachPath = Path.Combine(pinPath, $"attachments{message.Id}");
-                var attachInfo = Directory.CreateDirectory(attachPath);
-
-                using (var c = new HttpClient())
-                {
-                    // download the attachments
-                    // and save them to our directory
-                    var stream = await c.GetStreamAsync(attachment.Url);
-                    using (var file = new FileStream(Path.Combine(attachPath, $"{attachment.Id}{attachment.Filename}"), FileMode.Create))
-                    {
-                        // populate the file
-                        stream.CopyTo(file);
-                    }
-                }
-            }
+            await saveMessageAttachments(message, pinPath);
         }
         
         // goes and backs up all of the pinned messages and all of the images
@@ -91,27 +83,32 @@ namespace CSSBot.Commands
 
             if (guild == null) return;
 
-            string backup_dir = Path.Combine(current_dir, $"backup{guildId}");
+            string backup_dir = Path.Combine(current_dir, $"backup {guildId} ({guild.Name})");
             var backupInfo = Directory.CreateDirectory(backup_dir);
 
             foreach(var channel in await guild.GetTextChannelsAsync())
             {
                 // make a directory for this channel
                 // with the name of the channel Id
-                string channelPath = Path.Combine(backup_dir, channel.Id.ToString());
+                string channelPath = Path.Combine(backup_dir, $"{channel.Id} ({channel.Name})");
 
                 // make new dir
                 var directoryInfo = Directory.CreateDirectory(channelPath);
 
-                // make a folder for pins
-                string pinPath = Path.Combine(channelPath, "pins");
-                var pinDirInfo = Directory.CreateDirectory(pinPath);
 
-                Console.WriteLine("getting pins");
-                // save all of the pins
-                foreach(var message in await channel.GetPinnedMessagesAsync())
+                var pins = await channel.GetPinnedMessagesAsync();
+                if (pins != null && pins.Count > 0)
                 {
-                    await backupPinMessage(message, pinPath);
+                    // make a folder for pins, if doesn't already exist
+                    string pinPath = Path.Combine(channelPath, "pins");
+                    var pinDirInfo = Directory.CreateDirectory(pinPath);
+                    // save all of the pins
+                    foreach(var message in await channel.GetPinnedMessagesAsync())
+                    {
+                        Console.WriteLine("getting pins");
+                    
+                        await backupPinMessage(message, pinPath);                
+                    }
                 }
 
                 // download the last 2000 messages
@@ -143,6 +140,13 @@ namespace CSSBot.Commands
             }
         }
 
+        /// <summary>
+        /// Used for sending an embed-style "announcement" a text channel
+        /// </summary>
+        /// <param name="guildId"></param>
+        /// <param name="textChannelID"></param>
+        /// <param name="text"></param>
+        /// <returns></returns>
         [Command("AnnounceGuildChannel")]
         [RequireContext(ContextType.DM)]
         [RequireOwner()]
@@ -155,7 +159,7 @@ namespace CSSBot.Commands
             embed.WithColor(new Color(255, 204, 77));
             embed.WithTitle("Announcement");
             embed.WithCurrentTimestamp();
-            embed.WithAuthor(Context.User);
+            embed.WithAuthor(Context.Client.CurrentUser);
             embed.WithDescription(text);
 
             var result = await channel.SendMessageAsync("", false, embed.Build());
@@ -163,18 +167,34 @@ namespace CSSBot.Commands
             await ReplyAsync(result.Id.ToString(), false, embed.Build());
         }
 
+        /// <summary>
+        /// Used for sending a message to a text channel of a guild
+        /// </summary>
+        /// <param name="guildId"></param>
+        /// <param name="textChannelId"></param>
+        /// <param name="text"></param>
+        /// <returns></returns>
         [Command("SendMessageGuildChannel")]
         [RequireContext(ContextType.DM)]
         [RequireOwner()]
         public async Task SendMessageToGuildChannel(ulong guildId, ulong textChannelId, [Remainder] string text)
         {
             var guild = await Context.Client.GetGuildAsync(guildId) as SocketGuild;
-            var channel = guild.GetTextChannel(textChannelId) as SocketTextChannel;
+            if (guild != null)
+            {
+                var channel = guild.GetTextChannel(textChannelId) as SocketTextChannel;
 
-            var result = await channel.SendMessageAsync(text);
-            await ReplyAsync("OK, " + result.Id + ".\n" + text);
+                var result = await channel.SendMessageAsync(text);
+                await ReplyAsync("OK, " + result.Id + ".\n" + text);
+            }
         }
 
+        /// <summary>
+        /// Used for sending a text message to a user
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="text"></param>
+        /// <returns></returns>
         [Command("SendMessageUser")]
         [RequireContext(ContextType.DM)]
         [RequireOwner()]
@@ -187,6 +207,13 @@ namespace CSSBot.Commands
             await ReplyAsync("OK, " + result.Id + ".\n" + text);
         }
 
+        /// <summary>
+        /// used for banning a user from a guild
+        /// this can be done before the user has ever joined the guild
+        /// </summary>
+        /// <param name="guildId"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         [Command("GuildBanUserByID")]
         [RequireContext(ContextType.DM)]
         [RequireOwner()]
