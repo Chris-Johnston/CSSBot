@@ -8,6 +8,7 @@ A bot made for the CSS Discord server.
 ## Installation and Usage
 
 This project is cross-platform, however Visual Studio 2017 is recommended, so you may want to stick to Windows for this.
+JetBrains rider (available for free for students) is a good option for Linux development.
 
 - Install the [.NET Core SDK](https://www.microsoft.com/net/download/core).
 - [Add the Discord.Net Package source to the NuGet package manager.](https://discord.foxbot.me/docs/guides/getting_started/installing.html)
