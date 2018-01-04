@@ -9,201 +9,27 @@ namespace CSSBot.Commands
 {
     public class SpookyCommands : ModuleBase
     {
-        private string[] _HalloweenEmoji = new string[]
-        {
-            // ghost
-            "👻",
-            // skull
-            "💀",
-            // spider web
-            "🕸️",
-            "🕷",
-            // spider
-            "🕷️",
-            // bat
-            "🦇",
-            // jack o lantern
-            "🎃",
-            // lightning bolt
-            "⚡",
-            // doot
-            "🎺"
-        };
+        // this previously contained many commands for user nickname manipulation,
+        // but that got really messy quick and turned out to be a bad idea
 
-        // wait 30s before spooking another person
-        private TimeSpan TimeUntilNext = TimeSpan.FromSeconds(30);
-        private DateTime LastTime = DateTime.MinValue;
-
-        private string GetRandomEmoji()
-        {
-            Random r = new Random();
-            return _HalloweenEmoji[r.Next(_HalloweenEmoji.Length)];
-        }
-
-        private bool CheckIfOctober()
-        {
-            return DateTime.Now.Month == 10;
-        }
-
+        /// <summary>
+        /// Adds the skull and trumpet emoji as a reaction to the user's
+        /// command message and replies back with the youtube link for
+        /// the skull trumpet video
+        /// </summary>
+        /// <returns></returns>
         [Command("Doot")]
-        [Alias("Skull Trumpet")]
+        [Alias("SkullTrumpet")]
+        [RequireUserPermission(GuildPermission.ReadMessages | GuildPermission.SendMessages)]
         public async Task Doot()
         {
-            await Context.Message.AddReactionAsync(new Emoji("💀"));
-            await Context.Message.AddReactionAsync(new Emoji("🎺"));
-
-            await ReplyAsync(@"https://www.youtube.com/watch?v=eVrYbKBrI7o");
-        }
-
-        [Command("UnSpook")]
-        [Alias("UnScare")]
-        [Summary("Un-Spooks a role.")]
-        [RequireContext(ContextType.Guild)]
-        [RequireOwner()]
-        public async Task UnSpookRole([Name("Role")] IRole role)
-        {
-            foreach(IGuildUser user in await Context.Guild.GetUsersAsync())
+            // if october
+            if (DateTime.Now.Month == 10)
             {
-                bool inRole = false;
-                foreach(ulong id in user.RoleIds)
-                {
-                    if (id == role.Id)
-                        inRole = true;
-                }
+                await Context.Message.AddReactionAsync(new Emoji("💀"));
+                await Context.Message.AddReactionAsync(new Emoji("🎺"));
 
-                // if the user has a nickname set
-                if(user.Nickname != null && inRole)
-                {
-                    await Bot.Log(new LogMessage(LogSeverity.Info, "SpookyCommands", "Un-Spooking user " + user.Username));
-
-                    string newNick = user.Nickname;
-                    // replace each instance of the emoji with a blank
-                    foreach(string s in _HalloweenEmoji)
-                    {
-                        newNick = newNick.Replace(s, "");
-                    }
-
-                    // set their unspooked nickname
-                    // :(
-                    try
-                    {
-                        await user.ModifyAsync(x =>
-                        {
-                            x.Nickname = newNick;
-                        });
-                    }
-                    catch(Exception e)
-                    {
-                        // might have thrown permissions exception
-                    }
-                }
-            }
-
-            await ReplyAsync("Uh-oh! Looks like " + role.Mention + " has been un-spooked!");
-        }
-
-        [Command("Spook")]
-        [Alias("Scare")]
-        [Summary("Spooks a role.")]
-        [RequireContext(ContextType.Guild)]
-        [RequireOwner()] // never forget the spam
-        public async Task SpookRole([Name("Role")] IRole role)
-        {
-            foreach(IGuildUser user in await Context.Guild.GetUsersAsync())
-            {
-                // determine if each user in the guild has a match to the role
-                bool match = false;
-                foreach(ulong id in user.RoleIds)
-                {
-                    if (id == role.Id)
-                        match = true;
-                }
-
-                // if they do
-                if(match)
-                {
-                    // then update their user name
-                    // prevent emoji spam
-                    bool alreadySpooked = false;
-                    foreach (string s in _HalloweenEmoji)
-                    {
-                        if (user.Nickname != null && user.Nickname.Contains(s))
-                        {
-                            alreadySpooked = true;
-                        }
-                    }
-
-                    // update it if they don't already have spooky stuff
-                    if (!alreadySpooked)
-                    {
-                        try
-                        {
-                            await user.ModifyAsync(x =>
-                            {
-                                x.Nickname += (user.Nickname ?? user.Username) + GetRandomEmoji();
-                            });
-                        }
-                        // catch permissions exceptions
-                        catch(Exception e)
-                        { }
-                    }
-                }
-            }
-
-            // let everyone know
-            string returnMessage = string.Format("💀💀💀 Uh oh! 💀💀💀\n\n{0} has been spooked!", role.Name);
-            await ReplyAsync(returnMessage);
-        }
-
-        [Command("Spook")]
-        [Alias("Scare")]
-        [Summary("Spooks a user.")]
-        [RequireContext(ContextType.Guild)]
-        [RequireUserPermission(GuildPermission.ManageNicknames)]
-        public async Task Spook([Name("User")]IGuildUser user)
-        {
-            if (CheckIfOctober())
-            {
-                if (DateTime.Now.Subtract(TimeUntilNext).CompareTo(LastTime) > 0)
-                {
-                    LastTime = DateTime.Now;
-                    // prevent emoji spam
-                    bool alreadySpooked = false;
-                    foreach(string s in _HalloweenEmoji)
-                    {
-                        if(user.Nickname != null && user.Nickname.Contains(s))
-                        {
-                            alreadySpooked = true;
-                        }
-                    }
-
-                    if (!alreadySpooked)
-                    {
-                        string replyMessage = string.Format(
-                            "💀💀💀 Uh oh! 💀💀💀\n\n{0} has been spooked by {1}!",
-                            user.Mention,
-                            Context.User.Mention
-                            );
-                        await Bot.Log(
-                            new Discord.LogMessage(
-                                Discord.LogSeverity.Warning,
-                                "SpookyCommands",
-                                Context.User.Username + " spooked somebody"
-                            ));
-                        await user.ModifyAsync(x =>
-                        {
-                            x.Nickname += (user.Nickname ?? user.Username) + GetRandomEmoji();
-                        });
-
-                        await ReplyAsync(replyMessage);
-
-                        LastTime = DateTime.Now;
-                    }
-                }
-            }
-            else
-            {
-                await ReplyAsync("Try again in October!");
+                await ReplyAsync(@"https://www.youtube.com/watch?v=eVrYbKBrI7o");
             }
         }
     }
