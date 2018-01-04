@@ -17,6 +17,46 @@ namespace CSSBot.Commands
     [Remarks("These commands are for bot administration and are only allowed to be used by the bot owner.")]
     public class AdminCommands : ModuleBase
     {
+        /// <summary>
+        /// Removes all of the nicknames from each of the users in a guild
+        /// These all assume that the bot has the permissions to do this
+        /// preconditions don't matter when it's affecting another guild
+        /// </summary>
+        /// <param name="guildID"></param>
+        /// <returns></returns>
+        [Command("RemoveNicknamesFromGuild")]
+        [RequireOwner()]
+        public async Task RemoveNicknamesFromGuild(ulong guildID)
+        {
+            var guild = await Context.Client.GetGuildAsync(guildID);
+            if (guild != null)
+            {
+                foreach (var user in await guild.GetUsersAsync())
+                {
+                    RemoveUserNick(user);
+                }
+            }
+        }
+
+        [Command("RemoveUserNickname")]
+        [RequireOwner()]
+        public async Task RemoveUserNickname(ulong guildId, ulong userId)
+        {
+            var guild = await Context.Client.GetGuildAsync(guildId);
+            if (guild != null)
+            {
+                var user = await guild.GetUserAsync(userId);
+                RemoveUserNick(user);
+            }
+        }
+
+        private static void RemoveUserNick(IGuildUser user)
+        {
+            user?.ModifyAsync(
+                x => x.Nickname = null
+            );
+        }
+        
         private async Task backupMessage(IMessage message, string path)
         {
             Console.WriteLine("backing up message " + message.Id);
