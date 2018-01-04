@@ -52,9 +52,16 @@ namespace CSSBot.Commands
 
         private static void RemoveUserNick(IGuildUser user)
         {
+            try
+            {
             user?.ModifyAsync(
                 x => x.Nickname = null
             );
+            }
+            catch
+            {
+            // do nothing
+            }
         }
         
         private async Task backupMessage(IMessage message, string path)
