@@ -40,6 +40,11 @@ namespace CSSBot.Reminders
             return m_database.GetCollection<Reminder>("Reminders").FindOne(
                 x => x.GuildId == guildId && x.ID == id);
         }
+        public Reminder GetReminder(ulong guildId, int id, ulong authorId)
+        {
+            return m_database.GetCollection<Reminder>("Reminders").FindOne(
+                x => x.GuildId == guildId && x.ID == id && x.AuthorId == authorId);
+        }
 
         public IEnumerable<Reminder> GetReminderChannel(ulong channelID)
         {
@@ -153,6 +158,23 @@ namespace CSSBot.Reminders
             }            
         }
 
+        public void UpdateReminderAuthor(ulong guildId, int id, ulong authorID, string text = null, DateTime? time = null, ReminderType? type = null)
+        {
+            var coll = m_database.GetCollection<Reminder>("Reminders");
+            var match = coll.Find(x => x.GuildId == guildId && x.ID == id && x.AuthorId == authorID);
+            foreach (Reminder r in match)
+            {
+                if (!string.IsNullOrEmpty(text))
+                    r.ReminderText = text;
+                if (time.HasValue)
+                    r.ReminderTime = time.Value;
+                if (type.HasValue)
+                    r.ReminderType = type.Value;
+
+                coll.Update(r);
+            }
+        }
+
         public void RemoveReminderTime(ulong guildId, int id, TimeSpan time)
         {
             var col = m_database.GetCollection<Reminder>("Reminders");
@@ -175,15 +197,21 @@ namespace CSSBot.Reminders
             }
         }
 
-        public void RemoveReminder(ulong guildId, int id)
+        public int RemoveReminder(ulong guildId, int id)
         {
-            var y = m_database.GetCollection<Reminder>("Reminders")
+            return m_database.GetCollection<Reminder>("Reminders")
                 .Delete(x => x.GuildId == guildId && x.ID == id);
+        }
+
+        public int RemoveReminderAuthor(ulong guildId, int id, ulong authorId)
+        {
+            return m_database.GetCollection<Reminder>("Reminders")
+                .Delete(x => x.GuildId == guildId && x.ID == id && x.AuthorId == authorId);
         }
 
         public Reminder AddReminder(ulong guildId, ulong channelID,
             ulong authorId, string text, DateTime time,
-            ReminderType type = ReminderType.Channel)
+            ReminderType type = ReminderType.Default)
         {
             Reminder r = new Reminder()
             {

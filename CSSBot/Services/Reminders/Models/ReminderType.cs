@@ -14,6 +14,8 @@ namespace CSSBot.Reminders.Models
         // @here the channel when this is done
         Channel = 2,
         // @everyone the channel when this is done
-        Guild = 3
+        Guild = 3,
+        // don't ping anyone
+        Default = 4
     }
 }

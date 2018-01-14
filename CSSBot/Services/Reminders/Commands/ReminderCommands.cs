@@ -28,7 +28,6 @@ namespace CSSBot
         [Command("Add", RunMode = RunMode.Async)]
         [Alias("Create", "+", "New", "AddReminder", "CreateReminder", "NewReminder")]
         [RequireContext(ContextType.Guild)]
-        [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task AddReminder([Name("Time")]DateTime reminderTime, [Name("Reminder"), Remainder()]string ReminderText)
         {
             var added = _reminderService.AddReminder(Context.Guild.Id, Context.Channel.Id, Context.User.Id,
@@ -41,6 +40,7 @@ namespace CSSBot
         [Command("AddChannel", RunMode = RunMode.Async)]
         [Alias("CreateChannel", "+Channel")]
         [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task AddChannelReminder([Name("Time")]DateTime reminderTime, [Name("Reminder"), Remainder()]string ReminderText)
         {
             var added = _reminderService.AddReminder(Context.Guild.Id, Context.Channel.Id, Context.User.Id,
@@ -61,7 +61,7 @@ namespace CSSBot
 
             await ReplyAsync($"Ok {Context.User.Mention}! I've created a reminder for {added.ReminderTime.ToString("g")} with the ID# of `{added.ID}`.");
         }
-        
+
         [Command("ListTypeOptions")]
         [Alias("ListTypes", "ListType")]
         public async Task ListTypes()
@@ -79,6 +79,25 @@ namespace CSSBot
         public async Task AddReminderTimespan(int id, TimeSpan ts)
         {
             var reminder = _reminderService.GetReminder(Context.Guild.Id, id);
+            if (reminder != null)
+            {
+                reminder.AddTimeSpan(ts);
+                _reminderService.UpdateReminder(reminder);
+                //await ReplyAsync("Ok, I added the time " + ts.ToString() + ".");
+                await GetReminderById(id);
+            }
+            else
+            {
+                await ReplyAsync("Couldn't find a reminder by that ID.");
+            }
+        }
+
+        [Command("AddReminderTimespan", RunMode = RunMode.Async)]
+        [Alias("AddTimespan", "AddTime", "AddUpdateTime", "AddUpdate")]
+        [RequireContext(ContextType.Guild)]
+        public async Task AddReminderTimespanAuthor(int id, TimeSpan ts)
+        {
+            var reminder = _reminderService.GetReminder(Context.Guild.Id, id, Context.User.Id);
             if (reminder != null)
             {
                 reminder.AddTimeSpan(ts);
@@ -112,6 +131,25 @@ namespace CSSBot
             }
         }
 
+        [Command("RemoveReminderTimespan", RunMode = RunMode.Async)]
+        [Alias("RemoveTimespan", "RemoveTime", "RemoveUpdateTime", "RemoveUpdate")]
+        [RequireContext(ContextType.Guild)]
+        public async Task RemoveReminderTimespanAuthor(int id, TimeSpan ts)
+        {
+            var reminder = _reminderService.GetReminder(Context.Guild.Id, id, Context.User.Id);
+            if (reminder != null)
+            {
+                reminder.RemoveTimeSpan(ts);
+                _reminderService.UpdateReminder(reminder);
+                //await ReplyAsync("Ok!");
+                await GetReminderById(id);
+            }
+            else
+            {
+                await ReplyAsync("Couldn't find a reminder by that ID.");
+            }
+        }
+
         [Command("UpdateText", RunMode = RunMode.Async)]
         [Alias("ChangeText", "SetText")]
         [RequireContext(ContextType.Guild)]
@@ -119,6 +157,15 @@ namespace CSSBot
         public async Task UpdateReminderText([Name("ReminderID")]int id, [Name("Text"), Remainder()]string text)
         {
             _reminderService.UpdateReminder(Context.Guild.Id, id, text: text);
+            await ReplyAsync("Ok!");
+        }
+
+        [Command("UpdateText", RunMode = RunMode.Async)]
+        [Alias("ChangeText", "SetText")]
+        [RequireContext(ContextType.Guild)]
+        public async Task UpdateReminderTextAuthor([Name("ReminderID")]int id, [Name("Text"), Remainder()]string text)
+        {
+            _reminderService.UpdateReminderAuthor(Context.Guild.Id, id, Context.User.Id, text: text);
             await ReplyAsync("Ok!");
         }
 
@@ -132,6 +179,15 @@ namespace CSSBot
             await ReplyAsync("Ok!");
         }
 
+        [Command("UpdateTime", RunMode = RunMode.Async)]
+        [Alias("ChangeTime")]
+        [RequireContext(ContextType.Guild)]
+        public async Task UpdateReminderTimeAuthor([Name("ReminderID")]int id, [Name("Time")]DateTime time)
+        {
+            _reminderService.UpdateReminderAuthor(Context.Guild.Id, id, Context.User.Id, time: time);
+            await ReplyAsync("Ok!");
+        }
+
         [Command("UpdateType", RunMode = RunMode.Async)]
         [Alias("ChangeType")]
         [RequireContext(ContextType.Guild)]
@@ -139,6 +195,15 @@ namespace CSSBot
         public async Task UpdateReminderType([Name("ReminderID")]int id, [Name("Type")]ReminderType type)
         {
             _reminderService.UpdateReminder(Context.Guild.Id, id, type: type);
+            await ReplyAsync("Ok!");
+        }
+
+        [Command("UpdateType", RunMode = RunMode.Async)]
+        [Alias("ChangeType")]
+        [RequireContext(ContextType.Guild)]
+        public async Task UpdateReminderTypeAuthor([Name("ReminderID")]int id, [Name("Type")]ReminderType type)
+        {
+            _reminderService.UpdateReminderAuthor(Context.Guild.Id, id, Context.User.Id, type: type);
             await ReplyAsync("Ok!");
         }
 
@@ -153,8 +218,23 @@ namespace CSSBot
         [Summary("Dismisses a reminder for this server.")]
         public async Task DismissReminder([Name("ReminderID")] int id)
         {
-            _reminderService.RemoveReminder(Context.Guild.Id, id);
-            await ReplyAsync("Ok!");
+            int count = _reminderService.RemoveReminder(Context.Guild.Id, id);
+            if (count > 0)
+                await ReplyAsync("Ok!");
+        }
+
+        [Command("DismissReminder", RunMode = RunMode.Async)]
+        [Alias("Dismiss", "End", "Remove", "Delete")]
+        [RequireContext(ContextType.Guild)]
+        [Summary("Dismisses a reminder for this server.")]
+        public async Task DismissReminderNoManageMesssages([Name("ReminderID")] int id)
+        {
+            // only remove the reminder if the author matches
+            int count = _reminderService.RemoveReminderAuthor(Context.Guild.Id, id, Context.User.Id);
+            if(count > 0)
+            {
+                await ReplyAsync("Ok!");
+            }
         }
 
         /// <summary>
