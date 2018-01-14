@@ -25,7 +25,8 @@ namespace CSSBot.Counters
 
         private Task _client_MessageReceived(SocketMessage arg)
         {
-            if (arg.Channel == null) return Task.CompletedTask;
+            if (arg.Channel == null || arg.Author.IsBot)
+                return Task.CompletedTask;
 
             // when a message received
             // get all of the counters for that channel
@@ -35,6 +36,7 @@ namespace CSSBot.Counters
                 if(arg.Content.ToLower().Contains(counter.Text))
                 {
                     counter.Increment();
+                    UpdateCounter(counter);
                 }
             }
 
