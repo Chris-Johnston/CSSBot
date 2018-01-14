@@ -34,9 +34,7 @@ namespace CSSBot
             var added = _reminderService.AddReminder(Context.Guild.Id, Context.Channel.Id, Context.User.Id,
                 ReminderText, reminderTime);
 
-            string reply = string.Format("Ok {0}! I've created a reminder for `{1:g}` with the ID `{2}`.",
-                Context.User.Mention, added.ID, added.ReminderTime);
-            await ReplyAsync(reply);
+            await ReplyAsync($"Ok {Context.User.Mention}! I've created a reminder for {added.ReminderTime.ToString("g")} with the ID# of `{added.ID}`.");
         }
 
         // add channel reminder
@@ -48,9 +46,7 @@ namespace CSSBot
             var added = _reminderService.AddReminder(Context.Guild.Id, Context.Channel.Id, Context.User.Id,
                 ReminderText, reminderTime, ReminderType.Channel);
 
-            string reply = string.Format("Ok {0}! I've created a reminder for `{1:g}` with the ID `{2}`.",
-                Context.User.Mention, added.ID, added.ReminderTime);
-            await ReplyAsync(reply);
+            await ReplyAsync($"Ok {Context.User.Mention}! I've created a reminder for {added.ReminderTime.ToString("g")} with the ID# of `{added.ID}`.");
         }
 
         // add guild reminder
@@ -63,9 +59,7 @@ namespace CSSBot
             var added = _reminderService.AddReminder(Context.Guild.Id, Context.Channel.Id, Context.User.Id,
                 ReminderText, reminderTime, ReminderType.Guild);
 
-            string reply = string.Format("Ok {0}! I've created a reminder for `{1:g}` with the ID `{2}`.",
-                Context.User.Mention, added.ID, added.ReminderTime);
-            await ReplyAsync(reply);
+            await ReplyAsync($"Ok {Context.User.Mention}! I've created a reminder for {added.ReminderTime.ToString("g")} with the ID# of `{added.ID}`.");
         }
         
         [Command("ListTypeOptions")]
