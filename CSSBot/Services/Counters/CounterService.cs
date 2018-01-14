@@ -5,16 +5,40 @@ using CSSBot.Counters.Models;
 using System.Xml.Serialization;
 using System.IO;
 using LiteDB;
+using Discord.WebSocket;
+using System.Threading.Tasks;
 
 namespace CSSBot.Counters
 {
     public class CounterService
     {
         private LiteDatabase _database;
+        private DiscordSocketClient _client;
         
-        public CounterService(LiteDatabase db)
+        public CounterService(LiteDatabase db, DiscordSocketClient client)
         {
             _database = db;
+            _client = client;
+
+            _client.MessageReceived += _client_MessageReceived;
+        }
+
+        private Task _client_MessageReceived(SocketMessage arg)
+        {
+            if (arg.Channel == null) return Task.CompletedTask;
+
+            // when a message received
+            // get all of the counters for that channel
+            foreach(var counter in Counters.Find(x => x.ChannelID == arg.Channel.Id))
+            {
+                // if there is a match, increment the counter
+                if(arg.Content.ToLower().Contains(counter.Text))
+                {
+                    counter.Increment();
+                }
+            }
+
+            return Task.CompletedTask;
         }
 
         /// <summary>
