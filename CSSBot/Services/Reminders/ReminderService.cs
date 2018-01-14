@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Xml.Serialization;
 using CSSBot.Reminders.Models;
 using LiteDB;
+using Humanizer;
 
 namespace CSSBot.Reminders
 {
@@ -246,11 +247,11 @@ namespace CSSBot.Reminders
             }
             else
             {
-                title = expired.ToString() + " Remains";
+                title = expired.Humanize(3, false).Humanize(LetterCasing.Title) + " Remains";
             }
             embed.WithTitle(title);
             
-            embed.WithCurrentTimestamp();
+            //embed.WithCurrentTimestamp();
 
             // get the author username
             var user = m_client.GetUser(r.AuthorId);
@@ -260,21 +261,23 @@ namespace CSSBot.Reminders
             string description;
 
             // when reminder expire, don't include the timespan difference between now and remindertime
-            if (expired == TimeSpan.Zero)
-            {
-                description = string.Format("Reminder for {0:g}\n\n{1}", r.ReminderTime, r.ReminderText);
-            }
-            else
-            {
-                description = string.Format("Reminder for {0:g} ({2} remains.)\n\n{1}", r.ReminderTime, r.ReminderText, r.ReminderTime - DateTime.Now);
-            }
+            //if (expired.Equals( TimeSpan.Zero))
+            //{
+            //    description = $"Reminder for {r.ReminderTime.ToString("g")}\n\n{r.ReminderText}";
+            //}
+            //else
+            //{
+            //    description = $"Reminder for {r.ReminderTime.ToString("g")} ({(r.ReminderTime - DateTime.Now).Humanize()} remains.)\n\n{r.ReminderText}";
+            //}
+
+            description = $"Reminder for {r.ReminderTime.ToString("g")}\n\n{r.ReminderText}";
 
             if (r.ReminderTimeSpanTicks.Count > 1)
             {
                 // list the remaining reminder timespans
                 description += "\n\nNext reminder notifications:\n";
                 foreach (TimeSpan ts in r.ReminderTimeSpans)
-                    description += ts.ToString() + "\n";
+                    description += $"{ts.Humanize(3, false)}\n";
             }
 
             description = description.TrimEnd();

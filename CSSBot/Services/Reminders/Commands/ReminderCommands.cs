@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using CSSBot.Reminders.Models;
+using Humanizer;
 
 namespace CSSBot
 {
@@ -91,7 +92,7 @@ namespace CSSBot
                 await ReplyAsync("Couldn't find a reminder by that ID.");
             }
         }
-
+        
         [Command("AddReminderTimespan", RunMode = RunMode.Async)]
         [Alias("AddTimespan", "AddTime", "AddUpdateTime", "AddUpdate")]
         [RequireContext(ContextType.Guild)]
@@ -262,11 +263,25 @@ namespace CSSBot
                 builder.WithColor(new Color(255, 204, 77));
 
                 builder.WithTitle(string.Format("Reminder #{0}", reminder.ID));
-                builder.WithCurrentTimestamp();
+                //builder.WithCurrentTimestamp();
                 builder.WithFooter("Type: " + reminder.ReminderType);
                 string timealerts = "";
                 foreach (var ts in reminder.ReminderTimeSpans)
-                    timealerts += ts.ToString() + "\n";
+                {
+                    if(ts == TimeSpan.Zero)
+                    {
+                        timealerts += "On Expiration\n";
+                    }
+                    else if(ts > TimeSpan.Zero)
+                    {
+                        timealerts += ts.Humanize(3, false) + " before expiration\n";
+                    }
+                    else if (ts < TimeSpan.Zero)
+                    {
+                        timealerts += ts.Humanize(3, false) + " after expiration\n";
+                    }
+                }
+                    
 
                 string description = string.Format(
                     "**{0:g}**\n{1}\n\nRemaining Alerts:\n{2}",
