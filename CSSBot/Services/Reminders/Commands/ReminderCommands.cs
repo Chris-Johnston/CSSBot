@@ -33,8 +33,9 @@ namespace CSSBot
         {
             var added = _reminderService.AddReminder(Context.Guild.Id, Context.Channel.Id, Context.User.Id,
                 ReminderText, reminderTime);
-
-            await ReplyAsync($"Ok {Context.User.Mention}! I've created a reminder for {added.ReminderTime.ToString("g")} with the ID# of `{added.ID}`.");
+            
+            // just reply back with the reminder that was created
+            await GetReminderById(added.ID);
         }
 
         // add channel reminder
@@ -47,7 +48,7 @@ namespace CSSBot
             var added = _reminderService.AddReminder(Context.Guild.Id, Context.Channel.Id, Context.User.Id,
                 ReminderText, reminderTime, ReminderType.Channel);
 
-            await ReplyAsync($"Ok {Context.User.Mention}! I've created a reminder for {added.ReminderTime.ToString("g")} with the ID# of `{added.ID}`.");
+            await GetReminderById(added.ID);
         }
 
         // add guild reminder
@@ -60,7 +61,7 @@ namespace CSSBot
             var added = _reminderService.AddReminder(Context.Guild.Id, Context.Channel.Id, Context.User.Id,
                 ReminderText, reminderTime, ReminderType.Guild);
 
-            await ReplyAsync($"Ok {Context.User.Mention}! I've created a reminder for {added.ReminderTime.ToString("g")} with the ID# of `{added.ID}`.");
+            await GetReminderById(added.ID);
         }
 
         [Command("ListTypeOptions")]
@@ -84,12 +85,12 @@ namespace CSSBot
             {
                 reminder.AddTimeSpan(ts);
                 _reminderService.UpdateReminder(reminder);
-                //await ReplyAsync("Ok, I added the time " + ts.ToString() + ".");
+               
                 await GetReminderById(id);
             }
             else
             {
-                await ReplyAsync("Couldn't find a reminder by that ID.");
+                await ReplyAsync("I couldn't find a reminder by that ID.");
             }
         }
         
@@ -103,12 +104,11 @@ namespace CSSBot
             {
                 reminder.AddTimeSpan(ts);
                 _reminderService.UpdateReminder(reminder);
-                //await ReplyAsync("Ok, I added the time " + ts.ToString() + ".");
                 await GetReminderById(id);
             }
             else
             {
-                await ReplyAsync("Couldn't find a reminder by that ID.");
+                await ReplyAsync("I couldn't find a reminder by that ID.");
             }
         }
 
@@ -123,12 +123,11 @@ namespace CSSBot
             {
                 reminder.RemoveTimeSpan(ts);
                 _reminderService.UpdateReminder(reminder);
-                //await ReplyAsync("Ok!");
                 await GetReminderById(id);
             }
             else
             {
-                await ReplyAsync("Couldn't find a reminder by that ID.");
+                await ReplyAsync("I couldn't find a reminder by that ID.");
             }
         }
 
@@ -147,7 +146,7 @@ namespace CSSBot
             }
             else
             {
-                await ReplyAsync("Couldn't find a reminder by that ID.");
+                await ReplyAsync("I couldn't find a reminder by that ID.");
             }
         }
 
