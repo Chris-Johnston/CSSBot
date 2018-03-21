@@ -167,11 +167,11 @@ namespace CSSBot.Commands
                     IEnumerable<IMessage> col;
                     if(lastMessageId.HasValue)
                     {
-                        col = await channel.GetMessagesAsync(lastMessageId.Value, Direction.After, 100, CacheMode.AllowDownload).Flatten();
+                        col = await channel.GetMessagesAsync(lastMessageId.Value, Direction.After, 100, CacheMode.AllowDownload).FlattenAsync();
                     }
                     else
                     {
-                        col = await channel.GetMessagesAsync(100, CacheMode.AllowDownload).Flatten();
+                        col = await channel.GetMessagesAsync(100, CacheMode.AllowDownload).FlattenAsync();
                     }
 
                     foreach(var message in col)

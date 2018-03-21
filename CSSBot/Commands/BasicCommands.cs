@@ -67,7 +67,7 @@ namespace CSSBot.Commands
             // don't allow deleting more than 25 because that's a lot to delete
             // and we don't want to spam api either
             if (amountToCleanup < 0 || amountToCleanup > 25) amountToCleanup = 10;
-            foreach( var message in await Context.Channel.GetMessagesAsync(Context.Message.Id, Direction.Before, amountToCleanup).Flatten())
+            foreach( var message in await Context.Channel.GetMessagesAsync(Context.Message.Id, Direction.Before, amountToCleanup).FlattenAsync())
             {
                 if(message.Author.Id == Context.Client.CurrentUser.Id)
                     await message.DeleteAsync();
