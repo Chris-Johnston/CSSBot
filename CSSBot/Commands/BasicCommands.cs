@@ -45,65 +45,6 @@ namespace CSSBot.Commands
         }
 
         /// <summary>
-        /// Help text command
-        /// </summary>
-        /// <returns></returns>
-        [Command("Help"), Summary("Replies with some help text.")]
-        public async Task Help()
-        {
-            var embed = new EmbedBuilder();
-            embed.WithAuthor(Context.Client.CurrentUser as IUser);
-
-            embed.WithColor(new Color(255, 204, 77));
-
-            embed.WithTitle("Help");
-
-            foreach(var x in _commandService.Commands)
-            {
-                embed.AddField(x.Name, GenerateCommandDescription(x), true);
-                if (embed.Fields.Count >= 25) break;
-            }
-
-            await Context.Channel.SendMessageAsync("", false, embed.Build());
-        }
-
-        private string GenerateCommandDescription(CommandInfo command)
-        {
-            string ret = "`";
-            // show how the command should be used
-            if(string.IsNullOrWhiteSpace(command.Module.Name))
-            {
-                ret += GlobalConfiguration.CommandPrefix + command.Name;
-            }
-            else
-            {
-                ret += string.Format("{0}{1} {2}", GlobalConfiguration.CommandPrefix, command.Module.Name, command.Name);
-            }
-
-            // add parameters
-            foreach(var par in command.Parameters)
-            {
-                ret += " ";
-                // surround optional paramters with []
-                // non optional with < >
-                if (par.IsOptional)
-                    ret += "[";
-                else
-                    ret += "<";
-
-                ret += par.Type.Name + " " + par.Name;
-
-                if (par.IsOptional)
-                    ret += "]";
-                else
-                    ret += ">";
-            }
-            ret += "`\n" + command.Summary;
-
-            return ret;
-        }
-
-        /// <summary>
         /// About text command
         /// Includes a link to the repo
         /// </summary>
