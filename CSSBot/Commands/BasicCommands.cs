@@ -72,6 +72,9 @@ namespace CSSBot.Commands
                 if(message.Author.Id == Context.Client.CurrentUser.Id)
                     await message.DeleteAsync();
             }
+
+            // delete the message that started the command as well
+            await Context.Message.DeleteAsync();
         }
 
     }
