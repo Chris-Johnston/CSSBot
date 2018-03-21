@@ -2,6 +2,7 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using System;
+using System.Net;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -12,6 +13,8 @@ using System.Xml.Serialization;
 using CSSBot.Reminders.Models;
 using LiteDB;
 using Humanizer;
+using Ical.Net;
+using System.Net.Http;
 
 namespace CSSBot.Reminders
 {
@@ -63,6 +66,34 @@ namespace CSSBot.Reminders
         {
             return m_database.GetCollection<Reminder>("Reminders").Find(
                 x => x.AuthorId == auth && x.GuildId == guild);
+        }
+
+        private void CheckICalReminders()
+        {
+            // go through all of the ReminderICalSource associations ordered by ID
+            foreach(var association in m_database.GetCollection<ReminderICalSource>("ReminderICalAssociations").FindAll())
+            {
+                // download the calendar for this association
+                var cal = GetCalendarForAssociation(association);
+
+                // 
+            }
+        }
+
+        private async Task<Calendar> GetCalendarForAssociation(ReminderICalSource source)
+        {
+            Calendar ret = new Calendar();
+            using (var downloadClient = new HttpClient())
+            {
+                using (var result = await downloadClient.GetAsync(source.ICalPath))
+                {
+                    // make a new calendar from the result contents
+                    ret = Calendar.Load(await result.Content.ReadAsStringAsync());
+
+                    
+                }
+            }
+            return ret;            
         }
 
         private void CheckReminders()
