@@ -154,9 +154,9 @@ namespace CSSBot.Reminders.Models
         public void SetDefaultTimeSpans()
         {
             // 1 Week
-            AddTimeSpan(new TimeSpan(7, 0, 0, 0));
+            // AddTimeSpan(new TimeSpan(7, 0, 0, 0));
             // 3 Days
-            AddTimeSpan(new TimeSpan(3, 0, 0, 0));
+            // AddTimeSpan(new TimeSpan(3, 0, 0, 0));
             // 1 Day
             AddTimeSpan(new TimeSpan(1, 0, 0, 0));
             // 1 hour
