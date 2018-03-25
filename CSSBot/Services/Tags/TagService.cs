@@ -169,7 +169,7 @@ namespace CSSBot.Tags
         /// <param name="guildId"></param>
         public void UnBanUser(ulong userid, ulong guildId)
         {
-            _db.GetCollection<TagBannedUser>(TagBanTable).Delete(x => x.UserId == userid && x.GuildId == x.GuildId);
+            _db.GetCollection<TagBannedUser>(TagBanTable).Delete(x => x.UserId == userid && x.GuildId == guildId);
         }
 
         /// <summary>

@@ -153,8 +153,11 @@ namespace CSSBot.Tags
         [RequireUserPermission(GuildPermission.SendMessages)]
         [RequireBotPermission(GuildPermission.SendMessages)]
         [RequireContext(ContextType.Guild)]
-        public async Task ListUserTags(IGuildUser user)
+        public async Task ListUserTags(IGuildUser user = null)
         {
+            if (user == null)
+                user = Context.User as IGuildUser;
+
             string tagstr = $"Tags for user {user.Username}#{user.Discriminator}: ";
             foreach (var t in _tags.GetUserTags(user.Id, Context.Guild.Id))
             {
