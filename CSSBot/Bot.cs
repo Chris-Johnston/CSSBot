@@ -49,7 +49,7 @@ namespace CSSBot
                 .AddSingleton(_database)
                 .AddSingleton(new CounterService(_database, m_client))
                 .AddSingleton(new ReminderService(m_client, _database))
-                .AddSingleton(new TagService(m_client, _database))
+                .AddSingleton(new TagService(_database))
                 .BuildServiceProvider();
             
             await InstallCommandsAsync();
