@@ -12,6 +12,7 @@ using CSSBot.Counters;
 using CSSBot.Models;
 using CSSBot.Reminders;
 using LiteDB;
+using CSSBot.Tags;
 
 namespace CSSBot
 {
@@ -48,6 +49,7 @@ namespace CSSBot
                 .AddSingleton(_database)
                 .AddSingleton(new CounterService(_database, m_client))
                 .AddSingleton(new ReminderService(m_client, _database))
+                .AddSingleton(new TagService(m_client, _database))
                 .BuildServiceProvider();
             
             await InstallCommandsAsync();
