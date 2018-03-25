@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -18,10 +19,12 @@ namespace CSSBot.Commands
         // here are the docs I referenced to get this working
         // https://discord.foxbot.me/docs/guides/commands/commands.html#dependency-injection
         private readonly CommandService _commandService;
+        private readonly DiscordSocketClient _client;
 
-        public BasicCommands(CommandService commands)
+        public BasicCommands(CommandService commands, DiscordSocketClient client)
         {
             _commandService = commands;
+            _client = client;
         }
 
         /// <summary>
@@ -75,6 +78,14 @@ namespace CSSBot.Commands
 
             // delete the message that started the command as well
             await Context.Message.DeleteAsync();
+        }
+
+        [Command("InviteLink")]
+        [Summary("Gets the invite link for the bot.")]
+        [RequireUserPermission(GuildPermission.SendMessages | GuildPermission.EmbedLinks)]
+        public async Task InviteLink()
+        {
+            await ReplyAsync($"A user with the 'Manage Server' permission can add me to your server using the following link: https://discordapp.com/oauth2/authorize?client_id={_client.CurrentUser.Id}&scope=bot");
         }
 
     }
