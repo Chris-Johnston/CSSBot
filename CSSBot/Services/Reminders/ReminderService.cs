@@ -21,10 +21,14 @@ namespace CSSBot.Reminders
     public class ReminderService
     {
         // how long in ms to poll
-        private const int PollingRate = 30000;
+        //private const int PollingRate = 30000;
+        private const int PollingRate = 500;
         private Timer m_ReminderTimer;
         private LiteDatabase m_database;
         private readonly DiscordSocketClient m_client;
+
+        private readonly string ICalReminderTable = "ICalReminders";
+        private readonly string ReminderTable = "Reminders";
 
         public ReminderService(DiscordSocketClient client, LiteDatabase db)
         {
@@ -35,6 +39,7 @@ namespace CSSBot.Reminders
             {
                 // Check Reminders
                 CheckReminders();
+                CheckICalReminders();
 
             }, null, 5000, PollingRate);
         }
@@ -68,16 +73,45 @@ namespace CSSBot.Reminders
                 x => x.AuthorId == auth && x.GuildId == guild);
         }
 
-        private void CheckICalReminders()
+        private async void CheckICalReminders()
         {
             // go through all of the ReminderICalSource associations ordered by ID
-            foreach(var association in m_database.GetCollection<ReminderICalSource>("ReminderICalAssociations").FindAll())
+            foreach(var association in m_database.GetCollection<ReminderICalSource>(ICalReminderTable).FindAll())
             {
                 // download the calendar for this association
-                var cal = GetCalendarForAssociation(association);
+                var cal = await GetCalendarForAssociation(association);
 
-                // 
+                // debug
+                Console.WriteLine(cal.Events.Count);
+
+                foreach(var e in cal.Events)
+                {
+                    Console.WriteLine(e.Uid + e.IsAllDay.ToString());
+
+                    // check if expired
+                    Console.WriteLine("today");
+                    foreach(var x in e.GetOccurrences(DateTime.Today))
+                    {
+                        if(DateTime.Now.TimeOfDay > x.Period.StartTime.AsSystemLocal.TimeOfDay)
+                        {
+                            Console.WriteLine("in progress" + x.Source);
+                        }
+                    }
+
+                }
             }
+        }
+
+        public async void AddICalReminder(string url, ulong textChannelId, ulong guildId)
+        {
+            ReminderICalSource n = new ReminderICalSource()
+            {
+                TextChannelId = textChannelId,
+                GuildId = guildId,
+                ICalPath = new Uri(url)
+            };
+
+            m_database.GetCollection<ReminderICalSource>(ICalReminderTable).Insert(n);
         }
 
         private async Task<Calendar> GetCalendarForAssociation(ReminderICalSource source)
@@ -89,8 +123,6 @@ namespace CSSBot.Reminders
                 {
                     // make a new calendar from the result contents
                     ret = Calendar.Load(await result.Content.ReadAsStringAsync());
-
-                    
                 }
             }
             return ret;            
