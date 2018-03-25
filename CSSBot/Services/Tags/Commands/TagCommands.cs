@@ -113,6 +113,56 @@ namespace CSSBot.Tags
             await Context.Message.AddReactionAsync(new Emoji("🆗"));
         }
 
-        //todo add a command for cleaning up previous tags
+        [Command("taginfo")]
+        [Summary("Gets info about a tag")]
+        [RequireUserPermission(GuildPermission.SendMessages)]
+        [RequireBotPermission(GuildPermission.SendMessages)]
+        [RequireContext(ContextType.Guild)]
+        public async Task TagInfo(string tagName)
+        {
+            try
+            {
+                var t = _tags.GetTag(tagName, Context.Guild.Id, Context.User.Id);
+                await ReplyAsync(
+                    $"`{t.TagKey}` (#{t.Id}) Created by user ID {t.AuthorId} at {t.CreatedTime.ToString("G")}"
+                    );
+            }
+            catch (TagNotFoundException e)
+            {
+                await ReplyAsync(e.Message);
+            }
+        }
+        
+        [Command("taglist")]
+        [Alias("listtags", "listtag")]
+        [RequireUserPermission(GuildPermission.SendMessages)]
+        [RequireBotPermission(GuildPermission.SendMessages)]
+        [RequireContext(ContextType.Guild)]
+        public async Task ListTags()
+        {
+            string tagstr = "Tags: ";
+            foreach(var t in _tags.GetGuildTags(Context.Guild.Id))
+            {
+                tagstr += $"{t.TagKey} ({t.Id}), ";
+            }
+            await ReplyAsync(tagstr);
+        }
+
+        [Command("usertags")]
+        [Alias("taguser")]
+        [RequireUserPermission(GuildPermission.SendMessages)]
+        [RequireBotPermission(GuildPermission.SendMessages)]
+        [RequireContext(ContextType.Guild)]
+        public async Task ListUserTags(IGuildUser user)
+        {
+            string tagstr = $"Tags for user {user.Username}#{user.Discriminator}: ";
+            foreach (var t in _tags.GetUserTags(user.Id, Context.Guild.Id))
+            {
+                tagstr += $"{t.TagKey} ({t.Id}), ";
+            }
+            await ReplyAsync(tagstr);
+        }
+
+        //todo add a command for cleaning up previous tags being displayed
     }
 }

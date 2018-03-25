@@ -80,6 +80,16 @@ namespace CSSBot.Tags
         }
 
         /// <summary>
+        /// Gets all of the tags for the guild
+        /// </summary>
+        /// <param name="guildId"></param>
+        /// <returns></returns>
+        public IEnumerable<Tag> GetGuildTags(ulong guildId)
+        {
+            return _db.GetCollection<Tag>(TagTable).Find(x => x.GuildId == guildId);
+        }
+
+        /// <summary>
         /// Makes a new tag and adds it to the database
         /// </summary>
         /// <param name="tagName"></param>
