@@ -4,8 +4,6 @@ categories: [guide]
 layout: topic
 ---
 
-# General Commands Help
-
 This page will list information to use the general commands.
 
 All examples are case-insensitive. `?ping` will work the same as `?PING`.

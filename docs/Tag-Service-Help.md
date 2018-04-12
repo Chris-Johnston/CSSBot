@@ -4,8 +4,6 @@ categories: [guide]
 layout: topic
 ---
 
-# Tag Service Help
-
 The tag service provides commands that allow users to post messages that may be needed frequently. For example, linking to documentation could be done with a tag, instead of putting it in pins or somewhere else.
 
 All commands in this group have no group prefix, just the command prefix.
