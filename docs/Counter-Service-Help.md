@@ -1,3 +1,9 @@
+---
+title: Counter Service Help
+categories: [guide]
+layout: topic
+---
+
 # Counter Service Help
 
 The counter service is a service that checks messages to see if they contain a certain phrase, and increments a counter. It is very much unused and I should probably kill it off.

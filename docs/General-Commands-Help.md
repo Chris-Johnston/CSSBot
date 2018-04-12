@@ -1,3 +1,9 @@
+---
+title: General Commands Help
+categories: [guide]
+layout: topic
+---
+
 # General Commands Help
 
 This page will list information to use the general commands.

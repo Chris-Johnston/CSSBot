@@ -1,3 +1,9 @@
+---
+title: Reminder Service Help
+categories: [guide]
+layout: topic
+---
+
 # Reminder Service help
 
 The reminder service provides a way to post a reminder for a specific date and time
