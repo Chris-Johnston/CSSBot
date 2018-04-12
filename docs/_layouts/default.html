@@ -32,7 +32,7 @@
 
         {% for page in site.pages %}
           {% if page.categories contains 'guide' %}
-            <a>{{ page.title }}</a>
+            <a href="{{ page.url }}">{{ page.title }}</a>
             <br />
           {% endif %}
         {% endfor %}
