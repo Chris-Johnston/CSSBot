@@ -30,13 +30,11 @@
         <p class="view"><a href="{{ site.github.owner_url }}">View My GitHub Profile</a></p>
         {% endif %}
 
-        <ul>
         {% for page in site.pages %}
           {% if page.categories contains 'guide' %}
-            <li><a>{{ page.title }}</a></li>
+            <a>{{ page.title }}</a>
           {% endif %}
         {% endfor %}
-        </ul>
 
         {% if site.show_downloads %}
         <ul>
