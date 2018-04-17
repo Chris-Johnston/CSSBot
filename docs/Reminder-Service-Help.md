@@ -100,4 +100,183 @@ Example: `?r listtype`
 
 ## Add Reminder Timespan
 
-`todo`
+**Requires the Manage Messages permission, or that you are the author of a
+reminder being edited.**
+
+Adds a timespan before the expiration of a Reminder to the list of times
+for the Reminder to send a notification.
+
+For example, if your reminder expires at midnight, and you wish to be notified
+2 hours beforehand, you would add a timespan of "2:00:00", or 2 hours.
+In addition, you can also add notifications after the reminder expires.
+To be notified 2 hours after the expiration, you would add a timespan of "-2:00:00",
+or -2 hours.
+
+If the timespan added would already be expired when it is added, it will
+not be added.
+
+Parameters:
+- Reminder ID: The ID number of the reminder you wish to modify
+- TimeSpan: The amount of time before the reminder's expiration that you wish
+to be notified beforehand. Use a negative value to be notified after the
+reminder expires.
+
+Aliases:
+- `AddReminderTimespan`
+- `AddTimespan`
+- `AddTime`
+- `AddUpdateTime`
+- `AddUpdate`
+
+Example: `?r addremindertimespan 123 "1.2:00:00"` `?r addremindertimespan 123 "-3:00:00"`
+
+## Remove Reminder Timespan
+
+**Requires the Manage Messages permission, or that you are the author of a reminder
+being edited.**
+
+Removes a matching timespan from a reminder.
+
+Parameters:
+- Reminder ID: The ID number of the reminder you wish to modify
+- TimeSpan: The amount of time before the reminder's expiration that you wish
+to be notified beforehand. Use a negative value to be notified after the
+reminder expires.
+
+Aliases:
+- `RemoveReminderTimespan`
+- `RemoveTimespan`
+- `RemoveTime`
+- `RemoveUpdateTime`
+- `RemoveUpdate`
+
+Example: `?r removeupdate 123 "1.2:00:00"` `?r removetime 123 "-3:00:00"`
+
+## Update Text
+
+**Requires the Manage Messages permission, or that you are the author of a reminder
+being edited.**
+
+Sets the text for a reminder.
+
+Parameters:
+- Reminder ID: The ID number of the reminder you wish to modify.
+- Text: Does not have to be enclosed in double quotes (`""`). The content
+of the reminder's body.
+
+Aliases:
+- `UpdateText`
+- `ChangeText`
+
+Example: `?r UpdateText 123 this is some new reminder text`
+
+## Update Time
+
+**Requires the Manage Messages permission, or that you are the author of a reminder
+being edited.**
+
+Sets the time for a reminder.
+
+Parameters:
+- Reminder ID: The ID number of the reminder you wish to modify.
+- Time: The DateTime when the reminder should expire.
+
+Aliases:
+- `UpdateTime`
+- `ChangeTime`
+
+Example: `?r UpdateTime 123 "4/16/18 5PM"`
+
+## Update Type
+
+**Requires the Manage Messages permission, or that you are the author of a reminder
+being edited.**
+
+Changes the type of reminder.
+
+Parameters:
+- Reminder ID: The ID number of the reminder you wish to modify.
+- ReminderType: The type of reminder, as a single word that does not have to be
+enclosed in double quotes (`""`).
+
+Aliases:
+- `UpdateType`
+- `ChangeType`
+
+Example: `?r ChangeType 123 Author`
+
+## Dismiss Reminder
+
+**Requires the Manage Messages permission, or that you are the author of a reminder
+being edited.**
+
+Closes a reminder. This action cannot be undone. All of the reminder data
+is permanently deleted.
+
+Parameters:
+- Reminder ID: The ID number of the reminder you wish to modify.
+
+Aliases:
+- `Dismiss`
+- `DismissReminder`
+- `End`
+- `Remove`
+- `Delete`
+
+Example: `?r Dismiss 123`
+
+## Get Reminder Info
+
+Gets the info about a reminder by it's ID.
+
+Parameters:
+- Reminder ID: The ID number of the reminder you wish to get info for.
+
+Aliases:
+- `GetReminder`
+- `Get`
+
+Example: `?r get 123`
+
+## Get All Reminders in Server
+
+Gets all of the reminders in a server. *This will also include
+any reminders that have been created in private channels, and can expose
+the names of private channels.*
+
+Aliases:
+- `GuildReminders`
+- `ServerReminders`
+- `ListServer`
+- `ListGuild`
+
+Example: `?r listguild`
+
+## Get All Reminders in Channel
+
+Gets all of the reminders in the current channel.
+
+Aliases:
+- `ChannelReminders`
+- `Reminders`
+- `ListChannel`
+
+Example: `?r reminders`
+
+## Get All Reminders for User
+
+Gets all of the reminders for a user in a guild. *This will also include
+any reminders that have been created in private channels, and can expose
+the names of private channels.*
+
+Parameters:
+- User: A `@Mention` of a user, or their user ID. If no value is supplied,
+assumes to use the user which authored the command message.
+
+Aliases:
+- `UserReminders`
+- `MyReminders`
+- `ListUser`
+- `List`
+
+Example: `?r list`
