@@ -254,7 +254,11 @@ Example: `?r listguild`
 
 ## Get All Reminders in Channel
 
-Gets all of the reminders in the current channel.
+Gets all of the reminders of a text channel.
+
+Parameters:
+- Channel: A `#channel` mention, or the channel ID. If no value is supplied,
+assumes to use the current channel where the command was sent.
 
 Aliases:
 - `ChannelReminders`
@@ -279,4 +283,4 @@ Aliases:
 - `ListUser`
 - `List`
 
-Example: `?r list`
+Example: `?r list` `?r list @ChrisJ#8703` `?r list 123123123123`
