@@ -13,6 +13,7 @@ using CSSBot.Models;
 using CSSBot.Reminders;
 using LiteDB;
 using CSSBot.Tags;
+using CSSBot.Services.TheSpookening;
 
 namespace CSSBot
 {
@@ -50,6 +51,7 @@ namespace CSSBot
                 .AddSingleton(new CounterService(_database, m_client))
                 .AddSingleton(new ReminderService(m_client, _database))
                 .AddSingleton(new TagService(_database))
+                .AddSingleton(new SpookeningService(m_client, _database))
                 .BuildServiceProvider();
             
             await InstallCommandsAsync();
