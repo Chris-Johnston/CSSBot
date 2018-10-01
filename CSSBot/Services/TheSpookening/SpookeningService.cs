@@ -235,7 +235,7 @@ namespace CSSBot.Services.TheSpookening
 ?SpookyJoke
 ```
 
-More commands may be addded.
+More commands may be added.
 "
 );
             });
