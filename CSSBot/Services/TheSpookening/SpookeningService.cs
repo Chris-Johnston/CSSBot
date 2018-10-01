@@ -144,7 +144,6 @@ namespace CSSBot.Services.TheSpookening
                     }
                 }
             }, null, 0, PollRate);
-            
         }
 
         public void ResetAllNames()
