@@ -16,11 +16,9 @@ namespace CSSBot.Services.TheSpookening
         // server for a month
 
         // spookening service will only work in this server
-        //private const ulong TargetGuildId = 297485054836342786;
-        public const ulong TargetGuildId = 428476681519497218;
+        public const ulong TargetGuildId = 297485054836342786;
         // only send messages to this text channel
-        //private const ulong MessageChannelId = 297485054836342786;
-        private const ulong MessageChannelId = 429115833554567188;
+        private const ulong MessageChannelId = 297485054836342786;
 
         private const int SpookUserLimit = 2;
 
