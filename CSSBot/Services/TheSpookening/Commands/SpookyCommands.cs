@@ -11,8 +11,9 @@ namespace CSSBot.Commands
 {
     public class SpookyCommands : ModuleBase
     {
-
         private readonly Random random = new Random();
+
+        // if you are just reading the source code to figure out what the spookening is, you are going to spoil the fun
         private readonly List<string> Jokes = new List<string>()
         {
             "Q: What is in a ghost's nose?\nA: Boo-gers",
@@ -50,13 +51,27 @@ namespace CSSBot.Commands
         [RequireUserPermission(GuildPermission.ReadMessages | GuildPermission.SendMessages)]
         public async Task Doot()
         {
+            // actually this one is fine
+            //if (Context.Guild.Id != SpookeningService.TargetGuildId)
+            //{
+            //    await ReplyAsync("sry wrong server");
+            //    return;
+            //}
+
             // if october
             if (DateTime.Now.Month == 10)
             {
-                await Context.Message.AddReactionAsync(new Emoji("💀"));
-                await Context.Message.AddReactionAsync(new Emoji("🎺"));
+                if (spookening.CanUserUseSpookyCommands(Context.User.Id))
+                {
+                    await Context.Message.AddReactionAsync(new Emoji("💀"));
+                    await Context.Message.AddReactionAsync(new Emoji("🎺"));
 
-                await ReplyAsync("doot doot\nhttps://www.youtube.com/watch?v=eVrYbKBrI7o");
+                    await ReplyAsync("doot doot\nhttps://www.youtube.com/watch?v=eVrYbKBrI7o");
+                }
+                else
+                {
+                    await ReplyAsync("You aren't spooky enough to use this command.");
+                }
             }
             else
             {
@@ -74,7 +89,7 @@ namespace CSSBot.Commands
 
         [Command("AdminResetAll")]
         [RequireOwner()]
-        public async Task ResetAllName(IGuildUser user)
+        public async Task ResetAllNames()
         {
             var _ = Task.Factory.StartNew(() => spookening.ResetAllNames());
             await ReplyAsync("k");
@@ -84,6 +99,12 @@ namespace CSSBot.Commands
         [RequireContext(ContextType.Guild)]
         public async Task Spook(IGuildUser user)
         {
+            if (Context.Guild.Id != SpookeningService.TargetGuildId)
+            {
+                await ReplyAsync("sry wrong server");
+                return;
+            }
+
             if (DateTime.Now.Month == 10)
             {
                 if (spookening.CanUserUseSpookyCommands(Context.User.Id))
@@ -126,6 +147,12 @@ namespace CSSBot.Commands
         [RequireContext(ContextType.Guild)]
         public async Task SpookyJoke()
         {
+            // actually this one is fine
+            //if (Context.Guild.Id != SpookeningService.TargetGuildId)
+            //{
+            //    await ReplyAsync("sry wrong server");
+            //    return;
+            //}
             if (DateTime.Now.Month == 10)
             {
                 if (spookening.CanUserUseSpookyCommands(Context.User.Id))

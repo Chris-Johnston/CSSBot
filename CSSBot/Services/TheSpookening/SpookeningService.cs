@@ -17,7 +17,7 @@ namespace CSSBot.Services.TheSpookening
 
         // spookening service will only work in this server
         //private const ulong TargetGuildId = 297485054836342786;
-        private const ulong TargetGuildId = 428476681519497218;
+        public const ulong TargetGuildId = 428476681519497218;
         // only send messages to this text channel
         //private const ulong MessageChannelId = 297485054836342786;
         private const ulong MessageChannelId = 429115833554567188;
@@ -77,11 +77,18 @@ namespace CSSBot.Services.TheSpookening
             "typo in your resume",
             "{0}'s clone",
             "still just {0}",
-            "{0}",
             "ahh! {0}",
             "🔥{0}🔥",
             "merge conflicts",
-            "{0} is not alivent"
+            "{0} is not alivent",
+            "🦋 🔜 💡",
+            "v a p o r {0} w a v e",
+            "🕸️",
+            "rolled critical fail",
+            // backwards
+            "{1}",
+            "💡 moth 💡",
+            "slaps roof of {0}"
         };
 
         private string GetRandomNicknameFormatter
@@ -182,6 +189,21 @@ namespace CSSBot.Services.TheSpookening
                 // remove the item from the collection
                 spook.Expired = true;
             }
+
+            Task.Factory.StartNew(async () =>
+            {
+                await SendSpookMessage(
+@"Spooked Users have access to the following commads:
+```
+?Spook <@User>
+?Doot
+?SpookyJoke
+```
+
+More commands may be addded.
+"
+);
+            });
         }
 
         /// <summary>
@@ -202,15 +224,36 @@ namespace CSSBot.Services.TheSpookening
         }
 
         private string Truncate(string value, int maxLength)
-            => value.Length <= maxLength? value : value.Substring(0, maxLength); 
+            => value.Length <= maxLength? value : value.Substring(0, maxLength);
+
+        private const char ZeroWidthSpace = '\x200b';
+
+        /// <summary>
+        /// Sanitizes a nickname so that it cannot ping people
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        private string SanitizeNickname(string name)
+            => name.Replace("@", $"@{ZeroWidthSpace}");
 
         private void SpookUser(SocketGuildUser user)
         {
             var originalName = user.Nickname ?? user.Username;
-            var newName = string.Format(GetRandomNicknameFormatter, originalName);
+
+            string reverse(string input)
+            {
+                char[] charArray = input.ToCharArray();
+                Array.Reverse(charArray);
+                return new string(charArray);
+            }
+
+            var newName = string.Format(GetRandomNicknameFormatter, originalName, reverse(originalName));
+
+            var safeOriginalName = SanitizeNickname(originalName);
+            var safeNewName = SanitizeNickname(newName);
 
             var message =
-                $"Uh-oh! **{originalName}** has been spooked and is now **{newName}**!\n" +
+                $"Uh-oh! **{safeOriginalName}** has been spooked and is now **{safeNewName}**! AHH! So scary!\n" +
                 $"\n{user.Mention} can now spook up to **{SpookUserLimit}** other people with `?spook @User`.";
 
             var _ = Task.Factory.StartNew(async () =>
@@ -237,7 +280,7 @@ namespace CSSBot.Services.TheSpookening
             => SpookUserQueue.Exists(x => x.UserToSpookId == userId && !x.Expired);
 
         public bool CanUserUseSpookyCommands(ulong userId)
-            => IsUserSpooked(userId) || OverrideUsers.Contains(userId);
+            => IsUserSpooked(userId) || OverrideUsers.Contains(userId) || (DateTime.Now.Month == 10 && DateTime.Now.Day == 31);
 
         public void RegisterSpookedUser(ulong user, string name, ulong? by = null)
         {
@@ -260,14 +303,18 @@ namespace CSSBot.Services.TheSpookening
             var originalName = user.Nickname ?? user.Username;
             var newName = string.Format(GetRandomNicknameFormatter, originalName);
 
+            var safeOriginalName = SanitizeNickname(originalName);
+            var safeNewName = SanitizeNickname(newName);
+
             var message =
-                $"Uh-oh! **{originalName}** has been spooked by **{by.Mention}** and is now **{newName}**!\n" +
+                $"Uh-oh! **{safeOriginalName}** has been spooked by **{by.Mention}** and is now **{safeNewName}**! Yikes!\n" +
                 $"\n{user.Mention} can now spook up to **{SpookUserLimit}** other people with `?spook @User`.";
 
             var _ = Task.Factory.StartNew(async () =>
             {
                 try
                 {
+                    // just in case their nickname is too long
                     await user.ModifyAsync(x => x.Nickname = Truncate(newName, 32));
                 }
                 catch (Exception e)
@@ -296,7 +343,7 @@ namespace CSSBot.Services.TheSpookening
         /// </summary>
         private void OnHalloweenMidnight()
         {
-            var message = "🎃 **It's Halloween** 🎃\nNow everyone has access to the spooky commands, just for today.\nhttps://www.youtube.com/watch?v=viMWnEOYN_U";
+            var message = "🎃 **It's Halloween** 🎃\nNow everyone has access to the spooky commands, just for today. Nicknames will reset in a few days.\nhttps://www.youtube.com/watch?v=viMWnEOYN_U";
 
             Task.Factory.StartNew(async () => await SendSpookMessage(message));
         }
