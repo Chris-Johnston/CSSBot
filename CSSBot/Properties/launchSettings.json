@@ -2,7 +2,7 @@
   "profiles": {
     "CSSBot": {
       "commandName": "Project",
-      "commandLineArgs": "-config=D:\\cssbotconfig.xml"
+      "commandLineArgs": "-config=C:\\Discord\\testconfig.xml"
     }
   }
 }

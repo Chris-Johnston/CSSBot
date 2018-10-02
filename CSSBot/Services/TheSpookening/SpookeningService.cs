@@ -200,7 +200,7 @@ namespace CSSBot.Services.TheSpookening
         /// <param name="time"></param>
         /// <returns></returns>
         private bool IsTimeMidnight(TimeSpan time)
-            => time.Hours == 0 && time.Minutes == 0;
+            => time.Hours == 22 && time.Minutes == 0;
 
         public void ProcessSpooking()
         {
