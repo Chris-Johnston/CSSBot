@@ -20,7 +20,7 @@ namespace CSSBot.Services.TheSpookening
         // only send messages to this text channel
         private const ulong MessageChannelId = 297485054836342786;
 
-        private const int SpookUserLimit = 2;
+        private const int SpookUserLimit = 3;
 
         // let these users break the rules
         private readonly List<ulong> OverrideUsers = new List<ulong>()
@@ -202,28 +202,39 @@ namespace CSSBot.Services.TheSpookening
         private bool IsTimeMidnight(TimeSpan time)
             => time.Hours == 0 && time.Minutes == 0;
 
-        /// <summary>
-        /// Fires on midnight each day in October
-        /// </summary>
-        private void OnMidnight()
+        public void ProcessSpooking()
         {
-            // get a random user
-            var user = GetRandomUser();
-            
-            // if no users left, then just do nothing
-            if (user == null) return;
-
-            SpookUser(user);
-
             // process spookenings that have been issued earlier that day
             foreach (var spook in SpookUserQueue.Find(x => !x.Expired))
             {
+                var user = client.GetGuild(TargetGuildId).GetUser(spook.UserToSpookId);
                 var by = client.GetGuild(TargetGuildId).GetUser(spook.SpookedById);
                 SpookUser(user, by);
 
                 // remove the item from the collection
                 spook.Expired = true;
             }
+        }
+
+        /// <summary>
+        /// Fires on midnight each day in October
+        /// </summary>
+        private void OnMidnight()
+        {
+            for (int i = 0; i < 2; i++)
+            {
+                // get a random user
+                var user = GetRandomUser();
+
+                // if no users left, then just do nothing
+                if (user == null) return;
+
+                SpookUser(user);
+            }
+            
+
+            // process the queue of spooked people
+            ProcessSpooking();
 
             Task.Factory.StartNew(async () =>
             {
@@ -235,7 +246,7 @@ namespace CSSBot.Services.TheSpookening
 ?SpookyJoke
 ```
 
-More commands may be addded.
+More commands may be added.
 "
 );
             });
@@ -370,7 +381,7 @@ More commands may be addded.
         }
 
         public bool DoesUserHaveSpooksRemaining(ulong userId)
-            => SpookUserQueue.Count(x => x.SpookedById == userId) < SpookUserLimit;
+            => OverrideUsers.Contains(userId) || SpookUserQueue.Count(x => x.SpookedById == userId) < SpookUserLimit;
         /// <summary>
         /// Fires on the Midnight on 10/31.
         /// This will fire on Tuesday night so that it's effects

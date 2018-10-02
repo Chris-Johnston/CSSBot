@@ -95,6 +95,14 @@ namespace CSSBot.Commands
             await ReplyAsync("k");
         }
 
+        [Command("AdminProcessSpooks")]
+        [RequireOwner]
+        public async Task ManuallySpookUsers()
+        {
+            spookening.ProcessSpooking();
+            await ReplyAsync("Wow, that was spooky");
+        }
+
         [Command("Spook")]
         [RequireContext(ContextType.Guild)]
         public async Task Spook(IGuildUser user)
