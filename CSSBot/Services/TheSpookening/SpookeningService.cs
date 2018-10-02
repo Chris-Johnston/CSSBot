@@ -28,6 +28,11 @@ namespace CSSBot.Services.TheSpookening
             163184946742034432
         };
 
+        private readonly List<string> SpookyEmojis = new List<string>()
+        {
+            "🕸️", "🕷️", "🦇", "🌚", "☠️", "💀", "👻", "🧛", "🧟", "🎃", "💡", "🔥"
+        };
+
         // format strings for nicknames, or just spooky nicknames
         private readonly List<string> NicknameFormatters = new List<string>()
         {
@@ -116,6 +121,8 @@ namespace CSSBot.Services.TheSpookening
             this.database = database;
             random = new Random();
 
+            this.client.MessageReceived += MimicSpookyEmojiWithReactions;
+
             MidnightTimer = new Timer(_ =>
             {
                 if (DateTime.Now.Month == 10)
@@ -144,6 +151,37 @@ namespace CSSBot.Services.TheSpookening
                     }
                 }
             }, null, 0, PollRate);
+        }
+
+        // reacts to emojis with the same emojis if user is spooky
+        private async Task MimicSpookyEmojiWithReactions(SocketMessage arg)
+        {
+            if (DateTime.Now.Month == 10)
+            {
+                List<Emoji> toReact = new List<Emoji>();
+
+                if (CanUserUseSpookyCommands(arg.Author.Id))
+                {
+                    foreach (var emoji in SpookyEmojis)
+                    {
+                        if (arg.Content.Contains(emoji))
+                        {
+                            toReact.Add(new Emoji(emoji));
+                        }
+                    }
+                }
+                var message = arg as SocketUserMessage;
+
+                await Task.Factory.StartNew(async () =>
+                {
+                    foreach (var e in toReact)
+                    {
+                        await message.AddReactionAsync(e);
+                        // don't block other rate limits so delay this a bit too
+                        await Task.Delay(500);
+                    }
+                });
+            }
         }
 
         public void ResetAllNames()
