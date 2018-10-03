@@ -202,17 +202,73 @@ namespace CSSBot.Services.TheSpookening
         private bool IsTimeMidnight(TimeSpan time)
             => time.Hours == 22 && time.Minutes == 0;
 
+        public void FixQueue()
+        {
+            foreach (var spook in SpookUserQueue.FindAll())
+            {
+                // expire everything in the queue
+                spook.Expired = true;
+                SpookUserQueue.Update(spook);
+            }
+        }
+
         public void ProcessSpooking()
         {
             // process spookenings that have been issued earlier that day
             foreach (var spook in SpookUserQueue.Find(x => !x.Expired))
             {
+                // double check that the user isn't already spooked
+                if (IsUserSpooked(spook.UserToSpookId))
+                    continue;
+
                 var user = client.GetGuild(TargetGuildId).GetUser(spook.UserToSpookId);
                 var by = client.GetGuild(TargetGuildId).GetUser(spook.SpookedById);
+                
                 SpookUser(user, by);
 
-                // remove the item from the collection
+                // mark this item as expired
                 spook.Expired = true;
+                // update the database
+                SpookUserQueue.Update(spook);
+            }
+        }
+
+        /// <summary>
+        /// respooks a user
+        /// </summary>
+        /// <param name="userId"></param>
+        public async void RespookUser(ulong userId)
+        {
+            // ensure user is already spooked
+            if (IsUserSpooked(userId))
+            {
+                // get their original name
+                var user = GetSpookedUserCollection.FindOne(x => x.SpookedUserId == userId);
+                // get the discord user to modify
+                var discordUser = client.GetGuild(TargetGuildId).GetUser(userId); 
+
+                // this will always be set, it was determined once already
+                var originalName = user.OriginalNickName;
+                var newName = string.Format(GetRandomNicknameFormatter, originalName);
+
+                var safeOriginalName = SanitizeNickname(originalName);
+                var safeNewName = SanitizeNickname(newName);
+
+                var message =
+                    $"Uh-oh! **{safeOriginalName}** has been re-spooked and is now **{safeNewName}**! SpooOoOoooKy!";
+
+                var _ = Task.Factory.StartNew(async () =>
+                {
+                    try
+                    {
+                        // just in case their nickname is too long
+                        await discordUser.ModifyAsync(x => x.Nickname = Truncate(newName, 32));
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                    }
+                });
             }
         }
 
@@ -264,7 +320,8 @@ More commands may be added.
                 SpookUserQueue.Insert(new SpookQueue()
                 {
                     SpookedById = by,
-                    UserToSpookId = user
+                    UserToSpookId = user,
+                    Expired = false
                 });
             }
         }

@@ -95,6 +95,44 @@ namespace CSSBot.Commands
             await ReplyAsync("k");
         }
 
+        [Command("AdminFixQueue")]
+        [RequireOwner]
+        public async Task ExpireAllQueue()
+        {
+            // fix the queue
+            spookening.FixQueue();
+            await ReplyAsync("k. existing spooks might not work sry");
+        }
+
+        [Command("ThankMrSkeletal")]
+        public async Task RespookMePlease()
+        {
+            if (Context.Guild.Id != SpookeningService.TargetGuildId)
+            {
+                await ReplyAsync("sry wrong server");
+                return;
+            }
+            if (DateTime.Now.Month == 10)
+            {
+                if (spookening.CanUserUseSpookyCommands(Context.User.Id))
+                {
+                    // if the user is spooked, then allow them to respook themselves
+                    if (spookening.IsUserSpooked(Context.User.Id))
+                    {
+                        spookening.RespookUser(Context.User.Id);
+                    }
+                }
+                else
+                {
+                    await ReplyAsync("You aren't spooky enough to use this command.");
+                }
+            }
+            else
+            {
+                await ReplyAsync("Nah.");
+            }
+        }
+
         [Command("AdminProcessSpooks")]
         [RequireOwner]
         public async Task ManuallySpookUsers()
