@@ -269,6 +269,9 @@ namespace CSSBot.Services.TheSpookening
                         Console.WriteLine(e);
                     }
                 });
+                
+                // send a message
+                var _2 = Task.Factory.StartNew(async () => await SendSpookMessage(message));
             }
         }
 
