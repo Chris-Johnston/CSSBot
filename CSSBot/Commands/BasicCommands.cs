@@ -38,6 +38,10 @@ namespace CSSBot.Commands
             await ReplyAsync("Pong!");
         }
 
+        private const char ZeroWidthSpace = '\x200b';
+        public static string SanitizeMentions(string name)
+            => name.Replace("@", $"@{ZeroWidthSpace}");
+
         /// <summary>
         /// Echo command
         /// </summary>
@@ -45,7 +49,7 @@ namespace CSSBot.Commands
         [Command("Echo"), Summary("A simple echo command.")]
         public async Task Echo([Name("Text"), Summary("The text to echo back."), Remainder] string text)
         {
-            await ReplyAsync(Context.User.Mention + " : " + text);
+            await ReplyAsync(Context.User.Mention + " : " + SanitizeMentions(text));
         }
 
         /// <summary>

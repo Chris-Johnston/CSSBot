@@ -297,12 +297,14 @@ namespace CSSBot.Services.TheSpookening
 
             Task.Factory.StartNew(async () =>
             {
+                Thread.Sleep(1000);
                 await SendSpookMessage(
 @"Spooked Users have access to the following commads:
 ```
-?Spook <@User>
-?Doot
-?SpookyJoke
+?Spook <@User> - Spooks a user the following night.
+?Doot - Doot.
+?SpookyJoke - Tells a spooky joke.
+?ThankMrSkeletal - Chooses a new (spooky) nickname
 ```
 
 More commands may be added.
