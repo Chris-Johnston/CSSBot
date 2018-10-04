@@ -495,5 +495,20 @@ More commands may be added.
             // get a random user
             return users[random.Next(0, users.Count)];
         }
+
+        public void ForceSpookOverride(ulong userId, string originalNick)
+        {
+            // remove this user from being in the queue
+            SpookUserQueue.Delete(x => x.UserToSpookId == userId);
+            // and from the table if they are already for some reason
+            GetSpookedUserCollection.Delete(x => x.SpookedUserId == userId);
+
+            GetSpookedUserCollection.Insert(new SpookedUser()
+            {
+                OriginalNickName = originalNick, SpookedUserId = userId,
+                SpookedTime = DateTime.Now, 
+                SpookedByUserId = null
+            });
+        }
     }
 }

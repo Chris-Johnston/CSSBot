@@ -104,6 +104,17 @@ namespace CSSBot.Commands
             await ReplyAsync("k. existing spooks might not work sry");
         }
 
+        [Command("HeyAdminSpookThesePeopleRightNow")]
+        [RequireOwner]
+        public async Task HeyAdminSpookThesePeopleRightNow(params IGuildUser[] users)
+        {
+            foreach (var user in users)
+            {
+                spookening.ForceSpookOverride(user.Id, user.Nickname ?? user.Username);
+            }
+            await ReplyAsync("ugh. fine. try now.");
+        }
+
         [Command("ThankMrSkeletal")]
         public async Task RespookMePlease()
         {
