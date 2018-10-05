@@ -34,7 +34,7 @@ namespace CSSBot.Commands
                     sb.AppendLine($"{x.ItemKind} [{x.DisplayName}]({x.Url})\n{x.Description}\n");
                 }
 
-                sb.AppendLine($"\n[Wrong results? Search MSDN here.]({GetMsdnFrontEndSearch(s)})");
+                sb.AppendLine($"[Wrong results? Search MSDN here.]({GetMsdnFrontEndSearch(s)})");
                 eb.WithDescription(sb.ToString());
 
                 await ReplyAsync("Got results from MSDN:", embed: eb.Build());
