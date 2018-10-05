@@ -29,7 +29,7 @@ namespace CSSBot.Commands
 
                 var sb = new StringBuilder();
 
-                foreach (var x in results.Results.Take(7))
+                foreach (var x in results.Results.Take(3))
                 {
                     sb.AppendLine($"{x.ItemKind} [{x.DisplayName}]({x.Url})\n{x.Description}\n");
                 }
