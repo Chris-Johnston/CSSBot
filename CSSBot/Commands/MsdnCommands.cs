@@ -16,7 +16,6 @@ namespace CSSBot.Commands
     {
         [Command("MSDN")]
         [Summary("Searches the MSDN API for the given string.")]
-        [RequireUserPermission(GuildPermission.SendMessages)]
         public async Task SearchMSDN([Remainder] string s)
         {
             var results = await GetMsdnResultsAsync(s);
