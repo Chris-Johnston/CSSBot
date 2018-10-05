@@ -25,14 +25,14 @@ namespace CSSBot.Commands
             {
                 var eb = new EmbedBuilder();
                 eb.WithCurrentTimestamp();
-                eb.WithTitle($"MSDN Search Results for {s}");
+                eb.WithTitle($"MSDN Search Results for \"{s}\"");
                 eb.WithColor(new Color(255, 204, 77));
 
                 var sb = new StringBuilder();
 
                 foreach (var x in results.Results.Take(7))
                 {
-                    sb.AppendLine($"{x.ItemKind} [{x.DisplayName}]({x.Url})");
+                    sb.AppendLine($"{x.ItemKind} [{x.DisplayName}]({x.Url})\n{x.Description}\n");
                 }
 
                 sb.AppendLine($"\n[Wrong results? Search MSDN here.]({GetMsdnFrontEndSearch(s)})");
@@ -42,7 +42,7 @@ namespace CSSBot.Commands
             }
             else
             {
-                await ReplyAsync("Oops. Encountered an error and couldn't get the results from MSDN.");
+                await ReplyAsync("Oops. Encountered an error and couldn't get the results from MSDN. Searches must match the regular expression: `^[A-Za-z][A-Za-z0-9\\.<>,]+$`");
             }
         }
 
