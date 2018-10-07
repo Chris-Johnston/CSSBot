@@ -13,21 +13,6 @@ namespace CSSBot.Commands
     {
         private readonly Random random = new Random();
 
-        // if you are just reading the source code to figure out what the spookening is, you are going to spoil the fun
-        private readonly List<string> Jokes = new List<string>()
-        {
-            "Q: What is in a ghost's nose?\nA: Boo-gers",
-            "Q: What do you get when you cross a vampire and a snowman?\nA: Frostbite",
-            "Q: Why do skeletons have low self-esteem?\nA: They have no body to love",
-            "Q: Know why skeletons are so calm?\nA: Because nothing gets under their skin.",
-            "Q: How do vampires get around on Halloween?\nA: On blood vessels",
-            "Q: What’s a ghoul’s favorite bean?\nA: A human bean.",
-            "Q: Why did the ghost go into the bar?\nA: For the Boos.",
-            "Q: Why did the headless horseman go into business?\nA: He wanted to get ahead in life.",
-            "Q: Why don’t mummies take time off?\nA: They’re afraid to unwind.",
-            "Q: Why did the vampire need mouthwash?\nA: Because he had bat breath."
-        };
-
         //private readonly LiteDatabase database;
         private readonly SpookeningService spookening;
 
@@ -110,7 +95,7 @@ namespace CSSBot.Commands
         {
             foreach (var user in users)
             {
-                spookening.ForceSpookOverride(user.Id, user.Nickname ?? user.Username);
+                spookening.ForceSpookOverride(user.Id, user.Nickname);
             }
             await ReplyAsync("ugh. fine. try now.");
         }
@@ -118,7 +103,7 @@ namespace CSSBot.Commands
         [Command("ThankMrSkeletal")]
         public async Task RespookMePlease()
         {
-            if (Context.Guild.Id != SpookeningService.TargetGuildId)
+            if (Context.Guild.Id != spookening.TargetGuildId)
             {
                 await ReplyAsync("sry wrong server");
                 return;
@@ -130,7 +115,15 @@ namespace CSSBot.Commands
                     // if the user is spooked, then allow them to respook themselves
                     if (spookening.IsUserSpooked(Context.User.Id))
                     {
-                        spookening.RespookUser(Context.User.Id);
+                        try
+                        {
+                            spookening.RespookUser(Context.User.Id);
+                        }
+                        catch (Exception e)
+                        {
+                            // silently catch all errors
+                            Console.WriteLine($"Encountered exception when respooking {e}");
+                        }
                     }
                 }
                 else
@@ -156,7 +149,7 @@ namespace CSSBot.Commands
         [RequireContext(ContextType.Guild)]
         public async Task Spook(IGuildUser user)
         {
-            if (Context.Guild.Id != SpookeningService.TargetGuildId)
+            if (Context.Guild.Id != spookening.TargetGuildId)
             {
                 await ReplyAsync("sry wrong server");
                 return;
@@ -214,7 +207,7 @@ namespace CSSBot.Commands
             {
                 if (spookening.CanUserUseSpookyCommands(Context.User.Id))
                 {
-                    await ReplyAsync(Jokes[random.Next(0, Jokes.Count)]);
+                    await ReplyAsync(spookening.GetRandomSpookyJoke);
                 }
                 else
                 {

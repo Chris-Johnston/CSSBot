@@ -2,8 +2,10 @@
 using Discord;
 using Discord.WebSocket;
 using LiteDB;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,87 +14,33 @@ namespace CSSBot.Services.TheSpookening
 {
     public class SpookeningService
     {
-        // hard coded variables because this is only to be used in a single
-        // server for a month
+        private readonly SpookConfiguration Configuration;
 
-        // spookening service will only work in this server
-        public const ulong TargetGuildId = 297485054836342786;
-        // only send messages to this text channel
-        private const ulong MessageChannelId = 297485054836342786;
+        public ulong TargetGuildId
+            => Configuration.TargetGuildId;
 
-        private const int SpookUserLimit = 3;
+        public ulong MessageChannelId
+            => Configuration.MessageChannelId;
+
+        public int SpookUserLimit
+            => Configuration.SpookUserLimit;
 
         // let these users break the rules
-        private readonly List<ulong> OverrideUsers = new List<ulong>()
-        {
-            163184946742034432
-        };
+        private List<ulong> OverrideUsers
+            => Configuration.OverrideUserIds;
 
-        private readonly List<string> SpookyEmojis = new List<string>()
-        {
-            "🕸️", "🕷️", "🦇", "🌚", "☠️", "💀", "👻", "🧛", "🧟", "🎃", "💡", "🔥"
-        };
+        private List<string> SpookyEmojis
+            => Configuration.SpookyEmojis;
+
+        private List<string> Jokes
+            => Configuration.SpookyJokes;
+
+        public string GetRandomSpookyJoke
+            => Jokes[random.Next(0, Jokes.Count)];
 
         // format strings for nicknames, or just spooky nicknames
-        private readonly List<string> NicknameFormatters = new List<string>()
-        {
-            "Spooky {0}",
-            "{0}, but spooky",
-            "{0}!!!",
-            "a ghost",
-            "{0}'s skeleton",
-            "deploying to prod without testing",
-            "🕸️{0}🕸️",
-            "🕷️{0}🕷️",
-            "🦇{0}🦇",
-            "zombie {0}",
-            "{0}, but a vampire",
-            "franken-{0}",
-            "🌚",
-            "☠️{0}☠️",
-            "💀{0}💀",
-            "this person is actually dead now",
-            "👻spooky👻",
-            "👻{0}👻",
-            "🤡",
-            "👽{0}👽",
-            "🧛{0}🧛",
-            "🧟{0}🧟",
-            "🎃🎃🎃🎃🎃🎃🎃",
-            "🎃{0}🎃",
-            "{0}'s ghost",
-            "<something spooky goes here>",
-            "a skeleton",
-            "a zombie",
-            "forgetting to lock your car",
-            "leaving the iron on",
-            "sql injection",
-            "cross-site scripting",
-            "unpaid student loans",
-            "git push --force",
-            "headless {0}",
-            "a 5 page research paper",
-            "no documentation",
-            "writing documentation",
-            "null reference exceptions",
-            "memory leaks",
-            "compiler errors",
-            "typo in your resume",
-            "{0}'s clone",
-            "still just {0}",
-            "ahh! {0}",
-            "🔥{0}🔥",
-            "merge conflicts",
-            "{0} is not alivent",
-            "🦋 🔜 💡",
-            "v a p o r {0} w a v e",
-            "🕸️",
-            "rolled critical fail",
-            // backwards
-            "{1}",
-            "💡 moth 💡",
-            "slaps roof of {0}"
-        };
+        private List<string> NicknameFormatters
+            => Configuration.NicknameFormatters;
 
         private string GetRandomNicknameFormatter
             => NicknameFormatters[random.Next(0, NicknameFormatters.Count)];
@@ -115,10 +63,20 @@ namespace CSSBot.Services.TheSpookening
         private LiteCollection<SpookQueue> SpookUserQueue
             => database.GetCollection<SpookQueue>(SpookQueueCollection);
 
-        public SpookeningService(DiscordSocketClient client, LiteDatabase database)
+        public SpookeningService(DiscordSocketClient client, LiteDatabase database, string configFilePath)
         {
             this.client = client;
             this.database = database;
+
+            if (string.IsNullOrWhiteSpace(configFilePath))
+                throw new ArgumentNullException(nameof(configFilePath), "Config file path must be specified.");
+            if (!File.Exists(configFilePath))
+                throw new ArgumentException("Config file path was not found.");
+
+            // let json deserialize throw any errors it encounters
+            var fileContent = File.ReadAllText(configFilePath);
+            Configuration = JsonConvert.DeserializeObject<SpookConfiguration>(fileContent);
+
             random = new Random();
 
             this.client.MessageReceived += MimicSpookyEmojiWithReactions;
@@ -245,10 +203,10 @@ namespace CSSBot.Services.TheSpookening
                 // get their original name
                 var user = GetSpookedUserCollection.FindOne(x => x.SpookedUserId == userId);
                 // get the discord user to modify
-                var discordUser = client.GetGuild(TargetGuildId).GetUser(userId); 
+                var discordUser = client.GetGuild(TargetGuildId).GetUser(userId);
 
-                // this will always be set, it was determined once already
-                var originalName = user.OriginalNickName;
+                // the original nickname may be null, if the user didn't already have a nickname
+                var originalName = string.IsNullOrWhiteSpace(user.OriginalNickName) ? discordUser.Username : user.OriginalNickName;
                 var newName = string.Format(GetRandomNicknameFormatter, originalName);
 
                 var safeOriginalName = SanitizeNickname(originalName);
@@ -344,9 +302,12 @@ More commands may be added.
         private string SanitizeNickname(string name)
             => name.Replace("@", $"@{ZeroWidthSpace}");
 
+        private string GetNameFromUser(IGuildUser user)
+            => string.IsNullOrWhiteSpace(user.Nickname) ? user.Username : user.Nickname;
+
         private void SpookUser(SocketGuildUser user)
         {
-            var originalName = user.Nickname ?? user.Username;
+            var originalName = GetNameFromUser(user);
 
             string reverse(string input)
             {
@@ -408,7 +369,7 @@ More commands may be added.
 
         private void SpookUser(SocketGuildUser user, SocketGuildUser by)
         {
-            var originalName = user.Nickname ?? user.Username;
+            var originalName = GetNameFromUser(user);
             var newName = string.Format(GetRandomNicknameFormatter, originalName);
 
             var safeOriginalName = SanitizeNickname(originalName);

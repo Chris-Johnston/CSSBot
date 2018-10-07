@@ -15,8 +15,12 @@ namespace CSSBot
     {
         [XmlElementAttribute("ConnectionToken")]
         public string ConnectionToken { get; set; }
-        
+
         [XmlElement("LiteDatabasePath")]
         public string LiteDatabasePath { get; set; }
+
+        // yes, I'm mixing-and-matching XML and JSON
+        [XmlElement("SpookyConfigJson")]
+        public string SpookyConfigJson { get; set; }
     }
 }
