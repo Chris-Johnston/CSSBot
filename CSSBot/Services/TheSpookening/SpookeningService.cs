@@ -36,14 +36,14 @@ namespace CSSBot.Services.TheSpookening
             => Configuration.SpookyJokes;
 
         public string GetRandomSpookyJoke
-            => Jokes[random.Next(0, Jokes.Count)];
+            => Jokes[random.Next(0, Jokes.Count - 1)];
 
         // format strings for nicknames, or just spooky nicknames
         private List<string> NicknameFormatters
             => Configuration.NicknameFormatters;
 
         private string GetRandomNicknameFormatter
-            => NicknameFormatters[random.Next(0, NicknameFormatters.Count)];
+            => NicknameFormatters[random.Next(0, NicknameFormatters.Count - 1)];
 
         private Random random;
 
