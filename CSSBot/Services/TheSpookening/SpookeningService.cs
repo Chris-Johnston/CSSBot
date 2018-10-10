@@ -207,7 +207,7 @@ namespace CSSBot.Services.TheSpookening
 
                 // the original nickname may be null, if the user didn't already have a nickname
                 var originalName = string.IsNullOrWhiteSpace(user.OriginalNickName) ? discordUser.Username : user.OriginalNickName;
-                var newName = string.Format(GetRandomNicknameFormatter, originalName);
+                var newName = string.Format(GetRandomNicknameFormatter, originalName, ReverseString(originalName));
 
                 var safeOriginalName = SanitizeNickname(originalName);
                 var safeNewName = SanitizeNickname(newName);
@@ -305,18 +305,18 @@ More commands may be added.
         private string GetNameFromUser(IGuildUser user)
             => string.IsNullOrWhiteSpace(user.Nickname) ? user.Username : user.Nickname;
 
+        private static string ReverseString(string input)
+        {
+            char[] charArray = input.ToCharArray();
+            Array.Reverse(charArray);
+            return new string(charArray);
+        }
+
         private void SpookUser(SocketGuildUser user)
         {
             var originalName = GetNameFromUser(user);
 
-            string reverse(string input)
-            {
-                char[] charArray = input.ToCharArray();
-                Array.Reverse(charArray);
-                return new string(charArray);
-            }
-
-            var newName = string.Format(GetRandomNicknameFormatter, originalName, reverse(originalName));
+            var newName = string.Format(GetRandomNicknameFormatter, originalName, ReverseString(originalName));
 
             var safeOriginalName = SanitizeNickname(originalName);
             var safeNewName = SanitizeNickname(newName);
@@ -370,7 +370,7 @@ More commands may be added.
         private void SpookUser(SocketGuildUser user, SocketGuildUser by)
         {
             var originalName = GetNameFromUser(user);
-            var newName = string.Format(GetRandomNicknameFormatter, originalName);
+            var newName = string.Format(GetRandomNicknameFormatter, originalName, ReverseString(originalName));
 
             var safeOriginalName = SanitizeNickname(originalName);
             var safeNewName = SanitizeNickname(newName);
