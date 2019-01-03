@@ -33,7 +33,7 @@ namespace CSSBot.Commands
         [Command("Doot")]
         [Alias("SkullTrumpet")]
         [RequireContext(ContextType.Guild)]
-        [RequireUserPermission(GuildPermission.ReadMessages | GuildPermission.SendMessages)]
+        [RequireUserPermission(GuildPermission.ViewChannel | GuildPermission.SendMessages)]
         public async Task Doot()
         {
             // actually this one is fine
