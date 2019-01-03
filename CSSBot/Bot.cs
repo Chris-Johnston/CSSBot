@@ -63,7 +63,7 @@ namespace CSSBot
             m_client.Ready += Client_Ready;
 
             // set some help text
-            await m_client.SetGameAsync(string.Format("Type {0}Help", GlobalConfiguration.CommandPrefix));
+            await m_client.SetGameAsync($"Type {GlobalConfiguration.CommandPrefix}Help");
 
             // wait indefinitely 
             await Task.Delay(-1);
@@ -71,11 +71,11 @@ namespace CSSBot
 
         private async Task InstallCommandsAsync()
         {
-            m_client.MessageReceived += M_client_MessageReceived;
-            await _services.GetRequiredService<CommandService>().AddModulesAsync(Assembly.GetEntryAssembly());
+            m_client.MessageReceived += commandMessageReceived;
+            await _services.GetRequiredService<CommandService>().AddModulesAsync(Assembly.GetEntryAssembly(), _services);
         }
 
-        private async Task M_client_MessageReceived(SocketMessage arg)
+        private async Task commandMessageReceived(SocketMessage arg)
         {
             // Don't handle the command if it is a system message
             var message = arg as SocketUserMessage;
@@ -83,9 +83,8 @@ namespace CSSBot
 
             // Mark where the prefix ends and the command begins
             int argPos = 0;
-            // Determine if the message has a valid prefix, adjust argPos 
+            // Determine if the message has a valid prefix, adjust argPos
 
-            //todo update command handler stuff
             if (!(message.HasMentionPrefix(m_client.CurrentUser, ref argPos) || message.HasCharPrefix(GlobalConfiguration.CommandPrefix, ref argPos))) return;
 
             // Create a Command Context
@@ -101,8 +100,7 @@ namespace CSSBot
                 await Log(errorMessage);
                 // don't actually reply back with the error
 
-                // should probably redesign this
-                // if a command doesn't match, should try and find closest matches
+                // todo reply back with an error message that corresponds to the closest matching command name
             }
         }
 
