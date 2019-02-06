@@ -13,7 +13,7 @@ using Humanizer;
 namespace CSSBot
 {
     [Group("Reminder"), Alias("R")]
-    public class ReminderCommands : ModuleBase
+    public class ReminderCommands : ModuleBase // don't use ReplyModuleBase, since that may result in a lot of accidental timers
     {
         private readonly ReminderService _reminderService;
 

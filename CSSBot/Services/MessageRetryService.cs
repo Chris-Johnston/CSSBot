@@ -57,7 +57,7 @@ namespace CSSBot.Services
                 while (SuccessfulMessages.Count > MessageLimit)
                 {
                     var removed = SuccessfulMessages.Dequeue();
-                    Console.WriteLine($"removed old id {removed}");
+                    Console.WriteLine($"Removed old message Id {removed}");
                     if (CommandMessageResults.ContainsKey(removed))
                     {
                         CommandMessageResults.Remove(removed);
