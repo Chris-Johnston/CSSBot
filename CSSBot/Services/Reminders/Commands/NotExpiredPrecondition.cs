@@ -15,7 +15,7 @@ namespace CSSBot
         }
         public NotExpiredPreconditionAttribute(DateTime date)
         {
-            now = date ?? DateTime.Now;
+            now = date;
         }
 
         public override async Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, ParameterInfo parameter, object value, IServiceProvider services)
