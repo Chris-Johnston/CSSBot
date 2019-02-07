@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using CSSBot.Services;
+using Discord;
 using Discord.Commands;
 using Newtonsoft.Json;
 using System;
@@ -7,13 +8,28 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace CSSBot.Commands
 {
     [Name("")]
-    public class MsdnCommands : ModuleBase
+    public class MsdnCommands : RetryModuleBase
     {
+        /// <summary>
+        ///     Cache resuls so that duplicates are not repeated.
+        ///     Keys are uppercase.
+        /// </summary>
+        private Dictionary<string, MsdnApiSearchResults> SearchCache = new Dictionary<string, MsdnApiSearchResults>();
+
+        /// <summary>
+        ///     Regex for valid search queries.
+        /// </summary>
+        private static Regex SearchTermRegex = new Regex(@"^[A-Za-z][A-Za-z0-9\\.<>,]+$");
+
+        public MsdnCommands(MessageRetryService retry) : base(retry)
+        { }
+
         [Command("MSDN")]
         [Summary("Searches the MSDN API for the given string.")]
         public async Task SearchMSDN([Remainder] string s)
@@ -31,17 +47,17 @@ namespace CSSBot.Commands
 
                 foreach (var x in results.Results.Take(3))
                 {
-                    sb.AppendLine($"{x.ItemKind} [{x.DisplayName}]({x.Url})\n{x.Description}\n");
+                    sb.AppendLine($"{x.ItemKind} [{x.DisplayName}]({x.Url})\n{WebUtility.UrlDecode(x.Description)}\n");
                 }
 
                 sb.AppendLine($"[Wrong results? Search MSDN here.]({GetMsdnFrontEndSearch(s)})");
                 eb.WithDescription(sb.ToString());
 
-                await ReplyAsync("Got results from MSDN:", embed: eb.Build());
+                await ReplyOrUpdateAsync("Got results from MSDN:", embed: eb.Build());
             }
             else
             {
-                await ReplyAsync("Oops. Encountered an error and couldn't get the results from MSDN. Searches must match the regular expression: `^[A-Za-z][A-Za-z0-9\\.<>,]+$`");
+                await ReplyOrUpdateAsync("Oops. Encountered an error and couldn't get the results from MSDN. Searches must match the regular expression: `^[A-Za-z][A-Za-z0-9\\.<>,]+$`");
             }
         }
 
@@ -53,6 +69,22 @@ namespace CSSBot.Commands
 
         private async Task<MsdnApiSearchResults> GetMsdnResultsAsync(string s)
         {
+            if (string.IsNullOrWhiteSpace(s))
+                throw new ArgumentNullException(nameof(s), "The supplied search term may not be null/whitespace.");
+            s = s.Trim();
+            if (!SearchTermRegex.IsMatch(s))
+            {
+                throw new ArgumentException(paramName: nameof(s), message:
+                    "The search term contained invalid characters.");
+            }
+            var key = s.ToUpper();
+
+            // check if exists in cache
+            if (SearchCache.ContainsKey(key))
+            {
+                return SearchCache[key];
+            }
+
             using (var client = new HttpClient())
             {
                 var result = await client.GetAsync(GetMsdnAPISearchUrl(s));
@@ -60,7 +92,10 @@ namespace CSSBot.Commands
                 if (result.IsSuccessStatusCode)
                 {
                     // read the contents into a json reader
-                    return JsonConvert.DeserializeObject<MsdnApiSearchResults>(await result.Content.ReadAsStringAsync());
+                    var r = JsonConvert.DeserializeObject<MsdnApiSearchResults>(await result.Content.ReadAsStringAsync());
+                    // store in cache
+                    SearchCache.Add(key, r);
+                    return r;
                 }
             }
             return null;
