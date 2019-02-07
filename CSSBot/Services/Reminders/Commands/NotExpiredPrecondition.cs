@@ -22,7 +22,7 @@ namespace CSSBot
         {
             if (value is DateTime time)
             {
-                return now.CompareTo(time) >= 0 ? PreconditionResult.FromSuccess() : PreconditionResult.FromError("The provided time was after the current time.");
+                return now.CompareTo(time) <= 0 ? PreconditionResult.FromSuccess() : PreconditionResult.FromError("The provided time was after the current time.");
             }
             return PreconditionResult.FromError("The type of value was not a DateTime.");
         }
