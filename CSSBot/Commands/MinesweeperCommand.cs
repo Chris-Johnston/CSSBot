@@ -1,5 +1,6 @@
 ﻿using CSSBot.Commands;
 using CSSBot.Services;
+using Discord;
 using Discord.Commands;
 using System;
 using System.Collections.Generic;
@@ -10,6 +11,14 @@ namespace CSSBot
 {
     public class MinesweeperCommand : RetryModuleBase
     {
+        /// <summary>
+        ///     Stores the message id for the last puzzle that was made in a channel.
+        /// </summary>
+        public Dictionary<ulong, ulong> LastPuzzleInChannel
+            = new Dictionary<ulong, ulong>();
+
+
+
         public enum Difficulty
         {
             Default = 0,
@@ -35,7 +44,7 @@ namespace CSSBot
             {8, "\u0038\u20e3" },
         };
 
-        const string Bomb = "\u1f4a3";
+        const string Bomb = "\uD83D\uDCA3";
 
         private Random random;
 
@@ -57,7 +66,7 @@ namespace CSSBot
                     await Minesweeper(12, 12, 20);
                     break;
                 case Difficulty.Impossible:
-                    await Minesweeper(15, 15, (15 * 15) / 2);
+                    await Minesweeper(MaxDimension, MaxDimension, ((MaxDimension * MaxDimension) / 2) - 1);
                     break;
                 default:
                 case Difficulty.Default:
@@ -68,7 +77,7 @@ namespace CSSBot
         }
 
         const int MinDimension = 1;
-        const int MaxDimension = 15;
+        const int MaxDimension = 13;
 
         const int MinBombs = 1;
 
@@ -103,7 +112,63 @@ namespace CSSBot
                 sb.AppendLine();
             }
             // reply with the resulting string
-            await ReplyOrUpdateAsync(sb.ToString());
+            var msg = await ReplyOrUpdateAsync(sb.ToString());
+
+            if (msg != null)
+            {
+                // track the puzzle so that we can solve it later
+                var channelid = Context.Channel.Id;
+                if (LastPuzzleInChannel.ContainsKey(channelid))
+                {
+                    LastPuzzleInChannel[channelid] = msg.Id;
+                }
+                else
+                {
+                    LastPuzzleInChannel.Add(channelid, msg.Id);
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Edits the previous message to solve the result.
+        /// </summary>
+        [Command("Solve")]
+        public async Task Solve(IMessage message = null)
+        {
+            var channelId = Context.Channel.Id;
+            ulong messageId;
+            if (message == null)
+            {
+                // get the last puzzle in this channel
+                if (LastPuzzleInChannel.ContainsKey(channelId))
+                {
+                    messageId = LastPuzzleInChannel[channelId];
+                }
+                else
+                {
+                    await ReplyOrUpdateAsync("Couldn't find a puzzle to solve.");
+                    return;
+                }
+            }
+            else
+            {
+                messageId = message.Id;
+            }
+
+            // messageId is set
+            var original = await Context.Channel.GetMessageAsync(messageId);
+            if (original != null)
+            {
+                // reply with a solved copy of the puzzle, without the ||
+                var content = original.Content.Replace("|", "");
+                content = original.Content.Replace("@", "@​"); // @ with zwsp
+                await ReplyOrUpdateAsync(content);
+            }
+            else
+            {
+                await ReplyOrUpdateAsync("Couldn't get the last puzzle message.");
+            }
+
         }
 
         /// <summary>
