@@ -157,7 +157,7 @@ namespace CSSBot
             {
                 // reply with a solved copy of the puzzle, without the ||
                 var content = original.Content.Replace("|", "");
-                content = original.Content.Replace("@", "@​"); // @ with zwsp
+                content = content.Replace("@", "@​"); // @ with zwsp
                 await ReplyOrUpdateAsync(content);
             }
             else
