@@ -159,6 +159,9 @@ namespace CSSBot
                 var content = original.Content.Replace("|", "");
                 content = content.Replace("@", "@​"); // @ with zwsp
                 await ReplyOrUpdateAsync(content);
+
+                // remove this channel from the dict
+                solutions.LastPuzzleInChannel.Remove(channelId);
             }
             else
             {
