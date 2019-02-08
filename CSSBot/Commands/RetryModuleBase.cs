@@ -23,7 +23,7 @@ namespace CSSBot.Commands
         ///     Does not work with commands with multiple message responses.
         /// </summary>
         /// <param name="message"></param>
-        internal async Task ReplyOrUpdateAsync(string message = null, bool isTTS = false, Embed embed = null)
+        internal async Task<IUserMessage> ReplyOrUpdateAsync(string message = null, bool isTTS = false, Embed embed = null)
         {
             var id = messageRetry.GetMessageToUpdate(Context);
             if (id.HasValue)
@@ -39,6 +39,7 @@ namespace CSSBot.Commands
                         x.Embed = embed;
                     });
                     // don't need to update message IDs
+                    return usermessage;
                 }
             }
             else
@@ -46,7 +47,10 @@ namespace CSSBot.Commands
                 // id doesn't already exist, so create a new message
                 var msg = await ReplyAsync(message, isTTS, embed);
                 messageRetry.RegisterSuccessfulCommand(Context.Message.Id, msg.Id);
+                return msg;
             }
+            // error
+            return null;
         }
     }
 }
