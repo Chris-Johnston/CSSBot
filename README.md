@@ -25,8 +25,3 @@ JetBrains rider (available for free for students) is a good option for Linux dev
   - Create a file `debugBotConfig.xml` under any directory you want.
   - Copy the contents of `Test Config.xml` into your new file. Insert your bot's user token into the `<ConnectionToken>` field.
   - Set the startup parameters of your project to point to your configuration file. The command line arguments should read: `-config=/Path/To/Config.xml`.
-
-## Project Structure
-
-Work-in-progress or small changes should be contributed to the `dev` branch. The `master` branch should be used for "stable" releases only.
-Contributions should be merged to the `dev` branch, and batches of changes merged to the `master` branch. The bot is built and deployed from the `master` branch.

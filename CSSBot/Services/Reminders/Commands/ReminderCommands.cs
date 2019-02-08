@@ -13,7 +13,7 @@ using Humanizer;
 namespace CSSBot
 {
     [Group("Reminder"), Alias("R")]
-    public class ReminderCommands : ModuleBase
+    public class ReminderCommands : ModuleBase // don't use ReplyModuleBase, since that may result in a lot of accidental timers
     {
         private readonly ReminderService _reminderService;
 
@@ -29,7 +29,7 @@ namespace CSSBot
         [Command("Add", RunMode = RunMode.Async)]
         [Alias("Create", "+", "New", "AddReminder", "CreateReminder", "NewReminder")]
         [RequireContext(ContextType.Guild)]
-        public async Task AddReminder([Name("Time")]DateTime reminderTime, [Name("Reminder"), Remainder()]string ReminderText)
+        public async Task AddReminder([Name("Time"), NotExpiredPrecondition]DateTime reminderTime, [Name("Reminder"), Remainder()]string ReminderText)
         {
             var added = _reminderService.AddReminder(Context.Guild.Id, Context.Channel.Id, Context.User.Id,
                 ReminderText, reminderTime);
@@ -43,7 +43,7 @@ namespace CSSBot
         [Alias("CreateChannel", "+Channel")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
-        public async Task AddChannelReminder([Name("Time")]DateTime reminderTime, [Name("Reminder"), Remainder()]string ReminderText)
+        public async Task AddChannelReminder([Name("Time"), NotExpiredPrecondition]DateTime reminderTime, [Name("Reminder"), Remainder()]string ReminderText)
         {
             var added = _reminderService.AddReminder(Context.Guild.Id, Context.Channel.Id, Context.User.Id,
                 ReminderText, reminderTime, ReminderType.Channel);
@@ -56,7 +56,7 @@ namespace CSSBot
         [Alias("CreateServer", "+Server", "AddGuild", "CreateGuild", "+Guild")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(ChannelPermission.ManageMessages)]
-        public async Task AddGuildReminder([Name("Time")]DateTime reminderTime, [Name("Reminder"), Remainder()]string ReminderText)
+        public async Task AddGuildReminder([Name("Time"), NotExpiredPrecondition]DateTime reminderTime, [Name("Reminder"), Remainder()]string ReminderText)
         {
             var added = _reminderService.AddReminder(Context.Guild.Id, Context.Channel.Id, Context.User.Id,
                 ReminderText, reminderTime, ReminderType.Guild);

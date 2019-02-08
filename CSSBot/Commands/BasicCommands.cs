@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using CSSBot.Services;
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using System;
@@ -16,14 +17,14 @@ namespace CSSBot.Commands
     /// use an empty name attribute because these are default
     /// </summary>
     [Name("")]
-    public class BasicCommands : ModuleBase
+    public class BasicCommands : RetryModuleBase
     {
         // as far as I'm concerned, Dependency Injection is black magic
         // here are the docs I referenced to get this working
         // https://discord.foxbot.me/docs/guides/commands/commands.html#dependency-injection
         private readonly CommandService _commandService;
 
-        public BasicCommands(CommandService commands)
+        public BasicCommands(CommandService commands, MessageRetryService retryService) : base(retryService)
         {
             _commandService = commands;
         }
@@ -35,7 +36,7 @@ namespace CSSBot.Commands
         [Command("Ping"), Summary("A simple ping/pong command, for checking if the bot works.")]
         public async Task Ping()
         {
-            await ReplyAsync("Pong!");
+            await ReplyOrUpdateAsync("Pong!");
         }
 
         private const char ZeroWidthSpace = '\x200b';
@@ -49,7 +50,7 @@ namespace CSSBot.Commands
         [Command("Echo"), Summary("A simple echo command.")]
         public async Task Echo([Name("Text"), Summary("The text to echo back."), Remainder] string text)
         {
-            await ReplyAsync(Context.User.Mention + " : " + SanitizeMentions(text));
+            await ReplyOrUpdateAsync(Context.User.Mention + " : " + SanitizeMentions(text));
         }
 
         /// <summary>
@@ -62,7 +63,7 @@ namespace CSSBot.Commands
         public async Task About()
         {
             string txt = string.Format("🤔 CSSBot 🤔\nGitHub: https://github.com/Chris-Johnston/CSSBot");
-            await ReplyAsync(txt);
+            await ReplyOrUpdateAsync(txt);
         }
 
         [Command("Cleanup", RunMode = RunMode.Async)]
@@ -90,7 +91,7 @@ namespace CSSBot.Commands
         [RequireUserPermission(GuildPermission.SendMessages | GuildPermission.EmbedLinks)]
         public async Task InviteLink()
         {
-            await ReplyAsync($"A user with the 'Manage Server' permission can add me to your server using the following link: https://discordapp.com/oauth2/authorize?client_id={Context.Client.CurrentUser.Id}&scope=bot");
+            await ReplyOrUpdateAsync($"A user with the 'Manage Server' permission can add me to your server using the following link: https://discordapp.com/oauth2/authorize?client_id={Context.Client.CurrentUser.Id}&scope=bot");
         }
 
         [Command("Debug")]
@@ -98,7 +99,7 @@ namespace CSSBot.Commands
         [RequireUserPermission(GuildPermission.SendMessages)]
         public async Task DebugInfo()
         {
-            await ReplyAsync(
+            await ReplyOrUpdateAsync(
                 $"{Format.Bold("Info")}\n" +
                 $"- D.NET Lib Version {DiscordConfig.Version} (API v{DiscordConfig.APIVersion})\n" +
                 $"- Runtime: {RuntimeInformation.FrameworkDescription} {RuntimeInformation.OSArchitecture}\n" +

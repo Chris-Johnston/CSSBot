@@ -66,7 +66,7 @@ namespace CSSBot.Tags
         [Alias("deltag")]
         [Summary("Deletes a tag by Id.")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
-        [RequireBotPermission(GuildPermission.ReadMessages | GuildPermission.AddReactions)]
+        [RequireBotPermission(GuildPermission.ViewChannel | GuildPermission.AddReactions)]
         [RequireContext(ContextType.Guild)]
         public async Task DeleteTag(int id)
         {
@@ -80,7 +80,7 @@ namespace CSSBot.Tags
         [Alias("tagban")]
         [Summary("Bans a user from using the tag system.")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
-        [RequireBotPermission(GuildPermission.ReadMessages | GuildPermission.AddReactions)]
+        [RequireBotPermission(GuildPermission.ViewChannel | GuildPermission.AddReactions)]
         [RequireContext(ContextType.Guild)]
         public async Task BanTag(IGuildUser user)
         {
@@ -103,7 +103,7 @@ namespace CSSBot.Tags
         [Alias("tagunban")]
         [Summary("Unbans a user from using the tag system.")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        [RequireBotPermission(GuildPermission.ReadMessages | GuildPermission.AddReactions)]
+        [RequireBotPermission(GuildPermission.ViewChannel | GuildPermission.AddReactions)]
         [RequireContext(ContextType.Guild)]
         public async Task UnBanTag(IGuildUser user)
         {

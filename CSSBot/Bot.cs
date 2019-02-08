@@ -14,6 +14,7 @@ using CSSBot.Reminders;
 using LiteDB;
 using CSSBot.Tags;
 using CSSBot.Services.TheSpookening;
+using CSSBot.Services;
 
 namespace CSSBot
 {
@@ -23,6 +24,7 @@ namespace CSSBot
         private CommandService _commands;
         private IServiceProvider _services;
         private LiteDatabase _database;
+        private MessageRetryService messageRetry;
 
         public async Task Start()
         {
@@ -38,6 +40,7 @@ namespace CSSBot
             m_client = new DiscordSocketClient(new DiscordSocketConfig() { LogLevel = Discord.LogSeverity.Debug });
 
             _commands = new CommandService();
+            messageRetry = new MessageRetryService(m_client);
 
             // log in as a bot using our connection token
             await m_client.LoginAsync(TokenType.Bot, Program.GlobalConfiguration.Data.ConnectionToken);
@@ -52,9 +55,11 @@ namespace CSSBot
                 .AddSingleton(new ReminderService(m_client, _database))
                 .AddSingleton(new TagService(_database))
                 .AddSingleton(new SpookeningService(m_client, _database, Program.GlobalConfiguration.Data.SpookyConfigJson))
+                .AddSingleton(messageRetry)
                 .BuildServiceProvider();
             
             await InstallCommandsAsync();
+            messageRetry.OnCommandRetryHandler += commandMessageUpdated;
 
             // set up our logging function
             m_client.Log += Log;
@@ -63,29 +68,23 @@ namespace CSSBot
             m_client.Ready += Client_Ready;
 
             // set some help text
-            await m_client.SetGameAsync(string.Format("Type {0}Help", GlobalConfiguration.CommandPrefix));
+            await m_client.SetGameAsync($"Type {GlobalConfiguration.CommandPrefix}Help");
 
             // wait indefinitely 
             await Task.Delay(-1);
         }
 
-        private async Task InstallCommandsAsync()
+        private async Task commandMessageUpdated(SocketMessage arg)
         {
-            m_client.MessageReceived += M_client_MessageReceived;
-            await _services.GetRequiredService<CommandService>().AddModulesAsync(Assembly.GetEntryAssembly());
-        }
-
-        private async Task M_client_MessageReceived(SocketMessage arg)
-        {
+            // todo clean up copied and pasted code
             // Don't handle the command if it is a system message
             var message = arg as SocketUserMessage;
             if (message == null) return;
 
             // Mark where the prefix ends and the command begins
             int argPos = 0;
-            // Determine if the message has a valid prefix, adjust argPos 
+            // Determine if the message has a valid prefix, adjust argPos
 
-            //todo update command handler stuff
             if (!(message.HasMentionPrefix(m_client.CurrentUser, ref argPos) || message.HasCharPrefix(GlobalConfiguration.CommandPrefix, ref argPos))) return;
 
             // Create a Command Context
@@ -101,8 +100,46 @@ namespace CSSBot
                 await Log(errorMessage);
                 // don't actually reply back with the error
 
-                // should probably redesign this
-                // if a command doesn't match, should try and find closest matches
+                // todo reply back with an error message that corresponds to the closest matching command name
+            }
+        }
+
+        private async Task InstallCommandsAsync()
+        {
+            m_client.MessageReceived += commandMessageReceived;
+            await _services.GetRequiredService<CommandService>().AddModulesAsync(Assembly.GetEntryAssembly(), _services);
+        }
+
+        private async Task commandMessageReceived(SocketMessage arg)
+        {
+            // Don't handle the command if it is a system message
+            var message = arg as SocketUserMessage;
+            if (message == null) return;
+
+            // Mark where the prefix ends and the command begins
+            int argPos = 0;
+            // Determine if the message has a valid prefix, adjust argPos
+
+            if (!(message.HasMentionPrefix(m_client.CurrentUser, ref argPos) || message.HasCharPrefix(GlobalConfiguration.CommandPrefix, ref argPos)))
+            {
+                // messageRetry.RegisterFailedCommand(arg.Id);
+                return;
+            }
+
+            // Create a Command Context
+            var context = new CommandContext(m_client, message);
+            // Execute the Command, store the result
+            var result = await _commands.ExecuteAsync(context, argPos, _services);
+
+            // If the command failed
+            if (!result.IsSuccess)
+            {
+                // log the error
+                Discord.LogMessage errorMessage = new Discord.LogMessage(Discord.LogSeverity.Warning, "CommandHandler", result.ErrorReason);
+                await Log(errorMessage);
+                // don't actually reply back with the error
+
+                // todo reply back with an error message that corresponds to the closest matching command name
             }
         }
 

@@ -4,10 +4,10 @@
     <TargetFramework>netcoreapp1.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Discord.Net" Version="2.0.0-beta" />
-    <PackageReference Include="Humanizer" Version="2.5.1" />
+    <PackageReference Include="Discord.Net" Version="2.0.1" />
+    <PackageReference Include="Humanizer" Version="2.5.16" />
     <PackageReference Include="LiteDB" Version="4.1.4" />
-    <PackageReference Include="System.Net.Http" Version="4.3.3" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
     <PackageReference Include="System.Runtime.Extensions" Version="4.3.0" />
     <PackageReference Include="System.Xml.XDocument" Version="4.3.0" />
     <PackageReference Include="System.Xml.XmlSerializer" Version="4.3.0" />
