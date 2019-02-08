@@ -11,11 +11,6 @@ namespace CSSBot
 {
     public class MinesweeperCommand : RetryModuleBase
     {
-        /// <summary>
-        ///     Stores the message id for the last puzzle that was made in a channel.
-        /// </summary>
-        // private Dictionary<ulong, ulong> LastPuzzleInChannel;
-
         public enum Difficulty
         {
             Default = 0,
@@ -45,14 +40,16 @@ namespace CSSBot
 
         private Random random;
 
-        public MinesweeperCommand(MessageRetryService retryService) : base(retryService)
+        private MinesweeperSolutionService solutions;
+
+        public MinesweeperCommand(MessageRetryService retryService, MinesweeperSolutionService solutions) : base(retryService)
         {
             random = new Random();
-            LastPuzzleInChannel = new Dictionary<ulong, ulong>();
+            this.solutions = solutions;
         }
 
         [Command("minesweeper")]
-        [Alias("\u1f4a3")]
+        [Alias("\u1f4a3", "mine")]
         public async Task Minesweeper(Difficulty difficulty = Difficulty.Default)
         {
             switch (difficulty)
@@ -80,7 +77,7 @@ namespace CSSBot
         const int MinBombs = 1;
 
         [Command("minesweeper")]
-        [Alias("\u1f4a3")]
+        [Alias("\u1f4a3", "mine")]
         public async Task Minesweeper(int x, int y, int numbombs)
         {
             // constrain the dimensions of x and y
@@ -112,61 +109,62 @@ namespace CSSBot
             // reply with the resulting string
             var msg = await ReplyOrUpdateAsync(sb.ToString());
 
-            //if (msg != null)
-            //{
-            //    // track the puzzle so that we can solve it later
-            //    var channelid = Context.Channel.Id;
-            //    if (LastPuzzleInChannel.ContainsKey(channelid))
-            //    {
-            //        LastPuzzleInChannel[channelid] = msg.Id;
-            //    }
-            //    else
-            //    {
-            //        LastPuzzleInChannel.Add(channelid, msg.Id);
-            //    }
-            //}
+            if (msg != null)
+            {
+                // track the puzzle so that we can solve it later
+                var channelid = Context.Channel.Id;
+                if (solutions.LastPuzzleInChannel.ContainsKey(channelid))
+                {
+                    solutions.LastPuzzleInChannel[channelid] = msg.Id;
+                }
+                else
+                {
+                    solutions.LastPuzzleInChannel.Add(channelid, msg.Id);
+                }
+            }
         }
 
         /// <summary>
         ///     Edits the previous message to solve the result.
         /// </summary>
-        //[Command("Solve")]
-        //public async Task Solve(IMessage message = null)
-        //{
-        //    var channelId = Context.Channel.Id;
-        //    ulong messageId;
-        //    if (message == null)
-        //    {
-        //        // get the last puzzle in this channel
-        //        if (LastPuzzleInChannel.ContainsKey(channelId))
-        //        {
-        //            messageId = LastPuzzleInChannel[channelId];
-        //        }
-        //        else
-        //        {
-        //            await ReplyOrUpdateAsync("Couldn't find a puzzle to solve.");
-        //            return;
-        //        }
-        //    }
-        //    else
-        //    {
-        //        messageId = message.Id;
-        //    }
+        [Command("Solve")]
+        [Alias("solution")]
+        public async Task Solve(IMessage message = null)
+        {
+            var channelId = Context.Channel.Id;
+            ulong messageId;
+            if (message == null)
+            {
+                // get the last puzzle in this channel
+                if (solutions.LastPuzzleInChannel.ContainsKey(channelId))
+                {
+                    messageId = solutions.LastPuzzleInChannel[channelId];
+                }
+                else
+                {
+                    await ReplyOrUpdateAsync("Couldn't find a puzzle to solve.");
+                    return;
+                }
+            }
+            else
+            {
+                messageId = message.Id;
+            }
 
-        //    // messageId is set
-        //    var original = await Context.Channel.GetMessageAsync(messageId);
-        //    if (original != null)
-        //    {
-        //        // reply with a solved copy of the puzzle, without the ||
-        //        var content = original.Content.Replace("|", "");
-        //        content = original.Content.Replace("@", "@​"); // @ with zwsp
-        //        await ReplyOrUpdateAsync(content);
-        //    }
-        //    else
-        //    {
-        //        await ReplyOrUpdateAsync("Couldn't get the last puzzle message.");
-        //    }
-        //}
+            // messageId is set
+            var original = await Context.Channel.GetMessageAsync(messageId);
+            if (original != null)
+            {
+                // reply with a solved copy of the puzzle, without the ||
+                var content = original.Content.Replace("|", "");
+                content = original.Content.Replace("@", "@​"); // @ with zwsp
+                await ReplyOrUpdateAsync(content);
+            }
+            else
+            {
+                await ReplyOrUpdateAsync("Couldn't get the last puzzle message.");
+            }
+        }
 
         /// <summary>
         ///     Generates a 2d array of emojis used to represent the bomb state

@@ -56,6 +56,7 @@ namespace CSSBot
                 .AddSingleton(new TagService(_database))
                 .AddSingleton(new SpookeningService(m_client, _database, Program.GlobalConfiguration.Data.SpookyConfigJson))
                 .AddSingleton(messageRetry)
+                .AddSingleton(new MinesweeperSolutionService())
                 .BuildServiceProvider();
             
             await InstallCommandsAsync();
