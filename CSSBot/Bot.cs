@@ -154,6 +154,7 @@ namespace CSSBot
 
         public async static Task Log(Discord.LogMessage arg)
         { 
+            if (arg.Severity > Discord.LogSeverity.Info) return;
             // log stuff to console
             // could also log to a file if needed later on
             Console.WriteLine(arg.ToString());
