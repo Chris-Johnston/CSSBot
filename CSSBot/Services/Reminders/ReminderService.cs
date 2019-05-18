@@ -67,7 +67,7 @@ namespace CSSBot.Reminders
 
         private void CheckReminders()
         {
-            Bot.Log(new LogMessage(LogSeverity.Info, "Reminder", "Polling the reminder service."));
+            Bot.Log(new LogMessage(LogSeverity.Debug, "Reminder", "Polling the reminder service."));
 
             // loop through all of the reminders
             // and get the most recently expired
