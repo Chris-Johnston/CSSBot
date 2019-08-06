@@ -67,8 +67,6 @@ namespace CSSBot.Services.Courses
             var role = client.GetGuild(textChannel.Guild.Id).GetRole(roleId.Value);
             if (role == null)
                 return null;
-            if (!role.Name.Contains("member"))
-                return null;
             return role;
         }
 
