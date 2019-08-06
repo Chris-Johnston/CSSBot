@@ -15,6 +15,7 @@ using LiteDB;
 using CSSBot.Tags;
 using CSSBot.Services.TheSpookening;
 using CSSBot.Services;
+using CSSBot.Services.Courses;
 
 namespace CSSBot
 {
@@ -57,6 +58,7 @@ namespace CSSBot
                 .AddSingleton(new SpookeningService(m_client, _database, Program.GlobalConfiguration.Data.SpookyConfigJson))
                 .AddSingleton(messageRetry)
                 .AddSingleton(new MinesweeperSolutionService())
+                .AddSingleton(new CourseService(m_client))
                 .BuildServiceProvider();
             
             await InstallCommandsAsync();
@@ -91,17 +93,27 @@ namespace CSSBot
             // Create a Command Context
             var context = new CommandContext(m_client, message);
             // Execute the Command, store the result
-            var result = await _commands.ExecuteAsync(context, argPos, _services);
-
-            // If the command failed
-            if (!result.IsSuccess)
+            try
             {
-                // log the error
-                Discord.LogMessage errorMessage = new Discord.LogMessage(Discord.LogSeverity.Warning, "CommandHandler", result.ErrorReason);
-                await Log(errorMessage);
-                // don't actually reply back with the error
+                var result = await _commands.ExecuteAsync(context, argPos, _services);
 
-                // todo reply back with an error message that corresponds to the closest matching command name
+                // If the command failed
+                if (!result.IsSuccess)
+                {
+                    // log the error
+                    Discord.LogMessage errorMessage = new Discord.LogMessage(Discord.LogSeverity.Warning, "CommandHandler", result.ErrorReason);
+                    await Log(errorMessage);
+                    // don't actually reply back with the error
+
+                    // todo reply back with an error message that corresponds to the closest matching command name
+                    await context.Channel.SendMessageAsync($"Error: {errorMessage}");
+                }
+            }
+            catch (Exception e)
+            {
+                var error = new LogMessage(LogSeverity.Error, "CommandHandler", "Caught exception", e);
+                await Log(error);
+                await context.Channel.SendMessageAsync($"Error: {error}");
             }
         }
 
