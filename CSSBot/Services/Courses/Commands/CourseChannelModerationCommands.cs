@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace CSSBot.Commands
 {
-    [Group("courses")]
+    [Group("")]
     [RequireBotPermission(Discord.GuildPermission.ManageChannels)]
     [RequireUserPermission(Discord.ChannelPermission.ManageChannels)]
     [RequireContext(ContextType.Guild)]
