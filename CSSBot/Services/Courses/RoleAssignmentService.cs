@@ -38,10 +38,13 @@ namespace CSSBot.Services.Courses
 
         private async Task Client_ReactionRemoved(Discord.Cacheable<Discord.IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction)
         {
+            // get message, check conditions
             var m = await message.GetOrDownloadAsync();
             var textChannel = channel as IGuildChannel;
+            // only message from the bot
             if (!FromCurrentUser(m))
                 return;
+            // get the role from the first part of the message
             var role = GetRole(m, textChannel, reaction);
             if (role == null)
                 return;
@@ -49,21 +52,26 @@ namespace CSSBot.Services.Courses
             var user = client.GetGuild(textChannel.Guild.Id).GetUser(reaction.UserId);
             if (user == null)
                 return;
-            Console.WriteLine($"Removed {user} to role {role}");
+            // remove role
             await user.RemoveRoleAsync(role);
         }
 
         private IRole GetRole(IUserMessage m, IGuildChannel textChannel, SocketReaction reaction)
         {   
+            // must be IGuildChannel
             if (textChannel == null)
                 return null;
+            // ignore reactions from the bot
             if (reaction.UserId == client.CurrentUser.Id)
                 return null;
+            // must be checkmark
             if (reaction.Emote.Name != check.Name)
                 return null;
+            // get the role from the message
             var roleId = TryParseRole(m.Content);
             if (roleId == null)
                 return null;
+            // ensure role exists on the guild
             var role = client.GetGuild(textChannel.Guild.Id).GetRole(roleId.Value);
             if (role == null)
                 return null;
@@ -72,8 +80,10 @@ namespace CSSBot.Services.Courses
 
         private async Task Client_ReactionAdded(Discord.Cacheable<Discord.IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction)
         {
+            // get the message
             var m = await message.GetOrDownloadAsync();
             var textChannel = channel as IGuildChannel;
+            // only from the bot
             if (!FromCurrentUser(m))
                 return;
             var role = GetRole(m, textChannel, reaction);

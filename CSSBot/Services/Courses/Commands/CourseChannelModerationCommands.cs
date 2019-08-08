@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace CSSBot.Commands
 {
-    [Group("Course")]
+    [Group("")]
     [RequireBotPermission(Discord.GuildPermission.ManageChannels)]
     [RequireUserPermission(Discord.ChannelPermission.ManageChannels)]
     [RequireContext(ContextType.Guild)]
@@ -94,17 +94,16 @@ namespace CSSBot.Commands
             await ackMsg.ModifyAsync(x => x.Content = "k done.");
         }
 
-        [Command("joinrole")]
+        [Command("postjoinrole")]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task PostJoinRoleMessage(IRole role)
         {
-            // TODO make this reusable for a general case
             var check = new Emoji("\u2705");
-            var message = await ReplyAsync($"{role.Id}\nReact with a {check} on this message to get the {role} role.");
+            var message = await ReplyAsync($"{role.Id}\nReact with a {check} on this message to get the `@{role}` role.");
             await message.AddReactionAsync(check);
         }
 
-        [Command("post", RunMode = RunMode.Async)]
+        [Command("postjoincourse", RunMode = RunMode.Async)]
         public async Task PostJoinMessages(ICategoryChannel channelCategory, params string[] courseCodes)
         {
             var category = channelCategory as SocketCategoryChannel;
