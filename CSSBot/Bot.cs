@@ -106,14 +106,12 @@ namespace CSSBot
                     // don't actually reply back with the error
 
                     // todo reply back with an error message that corresponds to the closest matching command name
-                    await context.Channel.SendMessageAsync($"Error: {errorMessage}");
                 }
             }
             catch (Exception e)
             {
                 var error = new LogMessage(LogSeverity.Error, "CommandHandler", "Caught exception", e);
                 await Log(error);
-                await context.Channel.SendMessageAsync($"Error: {error}");
             }
         }
 
