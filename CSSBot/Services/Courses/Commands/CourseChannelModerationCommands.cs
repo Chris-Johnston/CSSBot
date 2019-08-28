@@ -76,7 +76,6 @@ namespace CSSBot.Commands
             await newChannel.SendMessageAsync($"This channel was reset at {DateTime.UtcNow} UTC.");
         }
 
-
         /// <summary>
         /// Creates channels and roles for courses.
         /// </summary>
