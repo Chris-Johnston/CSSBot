@@ -15,6 +15,68 @@ namespace CSSBot.Commands
     [RequireContext(ContextType.Guild)]
     public class CourseChannelModerationCommands : ModuleBase
     {
+        [Command("NukeAndRebuildCurrentChannel")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireContext(ContextType.Guild)]
+        // these parameters are added for a sanity check
+        public async Task NukeAndRebuildCurrentChannel(ITextChannel textChannel, ulong textChannelId, string textChannelName)
+        {
+            // ensure that the parameters match the context
+            if (Context.Channel.Id != textChannel.Id || Context.Channel.Id != textChannelId)
+            {
+                await ReplyAsync("Text channel Id did not match.");
+                return;
+            }
+
+            if (Context.Channel.Name.ToLower() != textChannelName.ToLower())
+            {
+                await ReplyAsync("Text channel name did not match.");
+                return;
+            }
+
+            var channel = Context.Channel as SocketTextChannel;
+            await ReplyAsync("RIP this channel.");
+            await channel.TriggerTypingAsync();
+            // create a new channel with same properties
+            var newChannel = await Context.Guild.CreateTextChannelAsync(channel.Name, x =>
+            {
+                x.CategoryId = channel.CategoryId;
+                x.IsNsfw = channel.IsNsfw;
+                x.Position = channel.Position;
+                x.SlowModeInterval = channel.SlowModeInterval;
+                x.Topic = channel.Topic;
+            });
+
+            // copy over permissions
+            foreach (var permission in channel.PermissionOverwrites)
+            {
+                if (permission.TargetType == PermissionTarget.Role)
+                {
+                    // get permissions for role
+                    var role = Context.Guild.GetRole(permission.TargetId);
+                    await newChannel.AddPermissionOverwriteAsync(role, permission.Permissions);
+                }
+                else
+                {
+                    // get permissions for user
+                    var user = await Context.Guild.GetUserAsync(permission.TargetId);
+                    await newChannel.AddPermissionOverwriteAsync(user, permission.Permissions);
+                }
+            }
+
+            // copy over webhooks
+            foreach (var webhook in await channel.GetWebhooksAsync())
+            {
+                await webhook.ModifyAsync(x => x.ChannelId = newChannel.Id);
+            }
+
+            // nuke the old channel
+            await channel.DeleteAsync();
+
+            await newChannel.SendMessageAsync($"This channel was reset at {DateTime.UtcNow} UTC.");
+        }
+
+
         /// <summary>
         /// Creates channels and roles for courses.
         /// </summary>
