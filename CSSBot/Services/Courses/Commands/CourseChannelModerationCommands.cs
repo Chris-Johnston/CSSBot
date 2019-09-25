@@ -108,6 +108,9 @@ namespace CSSBot.Commands
                 x.Topic = $"Course channel for {courseName}";
             });
 
+            // set the everyone role for channel to disable view channel perm by default
+            await channel.AddPermissionOverwriteAsync(Context.Guild.EveryoneRole, new OverwritePermissions(viewChannel: PermValue.Deny));
+
             await ackMessage.ModifyAsync(x => x.Content = ackMessage.Content + $"\nCreated {channel}.");
 
             // check duplicate role
@@ -123,7 +126,7 @@ namespace CSSBot.Commands
 
             await ackMessage.ModifyAsync(x => x.Content = ackMessage.Content + $"\nCreated role {role}.");
 
-            var perms = OverwritePermissions.InheritAll;
+            var perms = new OverwritePermissions(viewChannel: PermValue.Allow);
 
             // assign role perms
             await channel.AddPermissionOverwriteAsync(role, perms);
