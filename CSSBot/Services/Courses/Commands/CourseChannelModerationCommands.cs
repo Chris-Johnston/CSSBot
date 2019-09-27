@@ -134,7 +134,7 @@ namespace CSSBot.Commands
             await ackMessage.ModifyAsync(x => x.Content = ackMessage.Content + $"\nAssigned perms to {role}.\nDone.");
         }
 
-        [Command("sort")]
+        [Command("sort", RunMode = RunMode.Async)]
         public async Task SortCategory(ICategoryChannel channelCategory)
         {
             var category = channelCategory as SocketCategoryChannel;
@@ -153,6 +153,9 @@ namespace CSSBot.Commands
                 var c = channel as SocketGuildChannel;
                 await c.ModifyAsync(x => x.Position = order);
                 order++;
+
+                // delay a bit to avoid pre-emptive rate limit
+                await Task.Delay(100);
             }
 
             await ackMsg.ModifyAsync(x => x.Content = "k done.");
