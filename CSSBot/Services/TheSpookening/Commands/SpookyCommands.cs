@@ -24,6 +24,14 @@ namespace CSSBot.Commands
         // this previously contained many commands for user nickname manipulation,
         // but that got really messy quick and turned out to be a bad idea
 
+        [Command("ClearSpookedUserCollection")]
+        [RequireOwner]
+        public async Task ResetSpookedUsers()
+        {
+            spookening.DropSpookDatabase();
+            await ReplyAsync("k");
+        }
+
         /// <summary>
         /// Adds the skull and trumpet emoji as a reaction to the user's
         /// command message and replies back with the youtube link for

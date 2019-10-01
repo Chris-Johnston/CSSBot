@@ -53,12 +53,12 @@ namespace CSSBot.Services.TheSpookening
         private Timer MidnightTimer;
 
         private LiteDatabase database;
-        private const string SpookedUserColllection = "SpookedUser";
+        private const string SpookedUserCollection = "SpookedUser";
         private const string SpookQueueCollection = "SpookedQueueCollection";
         private readonly DiscordSocketClient client;
 
         private LiteCollection<SpookedUser> GetSpookedUserCollection
-            => database.GetCollection<SpookedUser>(SpookedUserColllection);
+            => database.GetCollection<SpookedUser>(SpookedUserCollection);
 
         private LiteCollection<SpookQueue> SpookUserQueue
             => database.GetCollection<SpookQueue>(SpookQueueCollection);
@@ -109,6 +109,13 @@ namespace CSSBot.Services.TheSpookening
                     }
                 }
             }, null, 0, PollRate);
+        }
+
+        public void DropSpookDatabase()
+        {
+            // drop collections of both tables
+            this.database.DropCollection(SpookedUserCollection);
+            this.database.DropCollection(SpookQueueCollection);
         }
 
         // reacts to emojis with the same emojis if user is spooky
