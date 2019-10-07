@@ -271,8 +271,6 @@ namespace CSSBot.Services.TheSpookening
 ?SpookyJoke - Tells a spooky joke.
 ?ThankMrSkeletal - Chooses a new (spooky) nickname
 ```
-
-More commands may be added.
 "
 );
             });
