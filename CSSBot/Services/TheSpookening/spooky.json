@@ -2,9 +2,7 @@
   "TargetGuildId": 297485054836342786,
   "MessageChannelId": 297485054836342786,
   "SpookUserLimit": 3,
-  "OverrideUserIds": [
-    163184946742034432
-  ],
+  "OverrideUserIds": [163184946742034432],
   "SpookyEmojis": [
     "🕸️",
     "🕷️",
@@ -79,15 +77,20 @@
     "💡 moth 💡",
     "slaps roof of {0}",
     "cssbot's codebase",
-	"Auto Resolves PR Comments",
-	"Triggered Discord Mod",
-	"Shadow {0}",
-	"Elon Musk's Musk",
-	"CSS {0}",
-	"🎃{0} o'Lantern🎃",
-	"UwU What's this??",
-	"P1 Issue at 12 A.M.",
-	"git push origin --delete master"
+    "Auto Resolves PR Comments",
+    "Triggered Discord Mod",
+    "Shadow {0}",
+    "Elon Musk's Musk",
+    "CSS {0}",
+    "🎃{0} o'Lantern🎃",
+    "UwU What's this??",
+    "P1 Issue at 12 A.M.",
+    "git push origin --delete master",
+    "Zetlen {0}",
+    "launch day of No Man's Sky",
+    "sharing code via thumb drive",
+    "JavaScript is a carpet {0}",
+    "expecting your degree will get you hired"
   ],
   "SpookyJokes": [
     "Q: What is in a ghost's nose?\nA: Boo-gers",
@@ -187,5 +190,4 @@
     "What does a skeleton say before dinner? \nBone appetit!",
     "What do you get when you cross a snowman with a vampire? \nFrostbite."
   ]
-
 }
