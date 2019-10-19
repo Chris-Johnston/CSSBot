@@ -2,9 +2,7 @@
   "TargetGuildId": 297485054836342786,
   "MessageChannelId": 297485054836342786,
   "SpookUserLimit": 3,
-  "OverrideUserIds": [
-    163184946742034432
-  ],
+  "OverrideUserIds": [163184946742034432],
   "SpookyEmojis": [
     "🕸️",
     "🕷️",
@@ -96,6 +94,11 @@
     "​",
     ":(){ :|: & };:",
     "sudo rm -rf /"
+    "Zetlen {0}",
+    "launch day of No Man's Sky",
+    "sharing code via thumb drive",
+    "JavaScript is a carpet {0}",
+    "expecting your degree will get you hired",
   ],
   "SpookyJokes": [
     "Q: What is in a ghost's nose?\nA: Boo-gers",
@@ -197,5 +200,4 @@
     "I wanna dress up as a UDP packet for halloween... \nbut idk if anyone will get it.",
     "JavaScript"
   ]
-
 }
