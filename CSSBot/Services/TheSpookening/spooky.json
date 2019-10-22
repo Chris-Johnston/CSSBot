@@ -93,7 +93,8 @@
     "#🅰️nime-quaratine",
     "​",
     ":(){ :|: & };:",
-    "sudo rm -rf /"
+    "sudo rm -rf /",
+    "pat broke the bot",
     "Zetlen {0}",
     "launch day of No Man's Sky",
     "sharing code via thumb drive",
@@ -101,6 +102,7 @@
     "expecting your degree will get you hired",
   ],
   "SpookyJokes": [
+    "CSSBot's Uptime",
     "Q: What is in a ghost's nose?\nA: Boo-gers",
     "Q: What do you get when you cross a vampire and a snowman?\nA: Frostbite",
     "Q: Why do skeletons have low self-esteem?\nA: They have no body to love",
@@ -198,6 +200,6 @@
     "What does a skeleton say before dinner? \nBone appetit!",
     "What do you get when you cross a snowman with a vampire? \nFrostbite.",
     "I wanna dress up as a UDP packet for halloween... \nbut idk if anyone will get it.",
-    "JavaScript"
+    "JavaScript",
   ]
 }
