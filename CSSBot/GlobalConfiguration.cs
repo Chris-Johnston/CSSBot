@@ -47,7 +47,9 @@ namespace CSSBot
         {
             if(string.IsNullOrWhiteSpace(path))
             {
-                throw new ArgumentException("The path supplied was null or whitespace!");
+                throw new ArgumentException(
+                    paramName: nameof(path),
+                    message: "The path supplied was null or whitespace.");
             }
 
             m_ConfigFilePath = path;
@@ -66,7 +68,7 @@ namespace CSSBot
         {
             if (string.IsNullOrWhiteSpace(m_ConfigFilePath))
             {
-                throw new Exception("The configuration file path has not been set!");
+                throw new Exception("The configuration file path has not been set.");
             }
 
             XmlSerializer ser = new XmlSerializer(typeof(Configuration));

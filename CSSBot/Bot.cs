@@ -142,15 +142,23 @@ namespace CSSBot
             // Execute the Command, store the result
             var result = await _commands.ExecuteAsync(context, argPos, _services);
 
-            // If the command failed
-            if (!result.IsSuccess)
+            try
             {
-                // log the error
-                Discord.LogMessage errorMessage = new Discord.LogMessage(Discord.LogSeverity.Warning, "CommandHandler", result.ErrorReason);
-                await Log(errorMessage);
-                // don't actually reply back with the error
+                // If the command failed
+                if (!result.IsSuccess)
+                {
+                    // log the error
+                    Discord.LogMessage errorMessage = new Discord.LogMessage(Discord.LogSeverity.Warning, "CommandHandler", result.ErrorReason);
+                    await Log(errorMessage);
+                    // don't actually reply back with the error
 
-                // todo reply back with an error message that corresponds to the closest matching command name
+                    // todo reply back with an error message that corresponds to the closest matching command name
+                }
+            }
+            catch (Exception e)
+            {
+                var error = new LogMessage(LogSeverity.Error, "CommandHandler", "Caught exception", e);
+                await Log(error);
             }
         }
 

@@ -17,6 +17,8 @@ namespace CSSBot
             m_commands = commands;
         }
 
+        // TODO fix the help text generated from being over the message character limit
+
         [Command("Help")]
         [Summary("Replies back with help text.")]
         [RequireBotPermission(Discord.GuildPermission.SendMessages)]
