@@ -49,7 +49,7 @@ namespace CSSBot
 
             // starts our client
             // we use LogSeverity.Debug because more info the better
-            m_client = new DiscordSocketClient(new DiscordSocketConfig() { LogLevel = Discord.LogSeverity.Info });
+            m_client = new DiscordSocketClient(new DiscordSocketConfig() { LogLevel = Discord.LogSeverity.Verbose });
 
             _commands = new CommandService();
             messageRetry = new MessageRetryService(m_client);

@@ -68,6 +68,9 @@ namespace CSSBot.Services.TheSpookening
             this.client = client;
             this.database = database;
 
+            // hack: too lazy to set up a json when testing
+            if (configFilePath == null) return;
+
             if (string.IsNullOrWhiteSpace(configFilePath))
                 throw new ArgumentNullException(nameof(configFilePath), "Config file path must be specified.");
             if (!File.Exists(configFilePath))
