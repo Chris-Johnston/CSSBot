@@ -3,24 +3,27 @@ using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using CSSBot.Reminders;
 using Discord.Commands;
 using System.Reflection;
 using CSSBot.Counters;
 using CSSBot.Models;
-using CSSBot.Reminders;
 using LiteDB;
 using CSSBot.Tags;
 using CSSBot.Services.TheSpookening;
 using CSSBot.Services;
 using CSSBot.Services.Courses;
+using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.DataContracts;
 
 namespace CSSBot
 {
     public class Bot
     {
+        private static TelemetryClient telemetryClient = null; // app insights logging
+
         private DiscordSocketClient m_client;
         private CommandService _commands;
         private IServiceProvider _services;
@@ -29,13 +32,21 @@ namespace CSSBot
 
         public async Task Start()
         {
+            // only set the telemetryClient if the key is set
+            if (Program.GlobalConfiguration.Data.AppInsightsInstrumentationKey != null)
+            {
+                var config = new TelemetryConfiguration(Program.GlobalConfiguration.Data.AppInsightsInstrumentationKey);
+                telemetryClient = new TelemetryClient(config);
+                telemetryClient.TrackTrace("App logging initialized.", SeverityLevel.Information);
+            }
+
             // open or create our database (if it doesn't exist)
             _database = new LiteDatabase(Program.GlobalConfiguration.Data.LiteDatabasePath);
 
             // add our startup date
             var startup = _database.GetCollection<StartupEvent>("startup");
             startup.Insert(new StartupEvent() { Time = DateTime.Now });
-            
+
             // starts our client
             // we use LogSeverity.Debug because more info the better
             m_client = new DiscordSocketClient(new DiscordSocketConfig() { LogLevel = Discord.LogSeverity.Info });
@@ -60,7 +71,7 @@ namespace CSSBot
                 .AddSingleton(new MinesweeperSolutionService())
                 .AddSingleton(new CourseService(m_client))
                 .BuildServiceProvider();
-            
+
             await InstallCommandsAsync();
             messageRetry.OnCommandRetryHandler += commandMessageUpdated;
 
@@ -171,11 +182,53 @@ namespace CSSBot
         }
 
         public async static Task Log(Discord.LogMessage arg)
-        { 
-            if (arg.Severity > Discord.LogSeverity.Info) return;
-            // log stuff to console
-            // could also log to a file if needed later on
-            Console.WriteLine(arg.ToString());
+        {
+            var appInsightsSeverity = ConvertLogSeverity(arg.Severity);
+            if (appInsightsSeverity != null && telemetryClient != null)
+            {
+                // this should be initialized once, clean it up later
+                var properties = new Dictionary<string, string>()
+                {
+                    {nameof(arg.Exception), arg.Exception?.ToString() },
+                    {nameof(arg.Message), arg.Message?.ToString() },
+                    {nameof(arg.Severity), arg.Severity.ToString() },
+                    {nameof(arg.Source), arg.Source?.ToString() },
+                };
+
+                if (arg.Exception != null)
+                {
+                    telemetryClient.TrackException(arg.Exception, properties: properties);
+                }
+
+                telemetryClient.TrackTrace(arg.Message, appInsightsSeverity.Value, properties: properties);
+            }
+
+            if (arg.Severity > Discord.LogSeverity.Info)
+            {
+                // log stuff to console
+                // could also log to a file if needed later on
+                Console.WriteLine(arg.ToString());
+            }
+        }
+
+        private static SeverityLevel? ConvertLogSeverity(Discord.LogSeverity discordSeverity)
+        {
+            var dict = new Dictionary<Discord.LogSeverity, SeverityLevel>()
+            {
+                { Discord.LogSeverity.Critical, SeverityLevel.Critical },
+                // do not log Debug
+                // { Discord.LogSeverity.Debug, SeverityLevel.Verbose },
+                { Discord.LogSeverity.Error, SeverityLevel.Error },
+                { Discord.LogSeverity.Info, SeverityLevel.Information },
+                { Discord.LogSeverity.Verbose, SeverityLevel.Verbose },
+                { Discord.LogSeverity.Warning, SeverityLevel.Warning },
+            };
+
+            if (dict.ContainsKey(discordSeverity))
+            {
+                return dict[discordSeverity];
+            }
+            return null;
         }
     }
 }

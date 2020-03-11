@@ -22,5 +22,8 @@ namespace CSSBot
         // yes, I'm mixing-and-matching XML and JSON
         [XmlElement("SpookyConfigJson")]
         public string SpookyConfigJson { get; set; }
+
+        [XmlElement("AppInsightsInstrumentationKey")]
+        public string AppInsightsInstrumentationKey { get; set; }
     }
 }
