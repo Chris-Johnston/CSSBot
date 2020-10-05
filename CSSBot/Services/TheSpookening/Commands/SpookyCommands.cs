@@ -181,6 +181,7 @@ namespace CSSBot.Commands
                             {
                                 // silently catch all errors
                                 Console.WriteLine($"Encountered exception when respooking {e}");
+                                throw;
                             }
                         }
                         else
