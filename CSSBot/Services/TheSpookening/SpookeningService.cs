@@ -6,6 +6,8 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -55,6 +57,7 @@ namespace CSSBot.Services.TheSpookening
         private LiteDatabase database;
         private const string SpookedUserCollection = "SpookedUser";
         private const string SpookQueueCollection = "SpookedQueueCollection";
+        private const string UsageLog = nameof(UsageLog) + "Collection";
         private readonly DiscordSocketClient client;
 
         private LiteCollection<SpookedUser> GetSpookedUserCollection
@@ -62,6 +65,9 @@ namespace CSSBot.Services.TheSpookening
 
         private LiteCollection<SpookQueue> SpookUserQueue
             => database.GetCollection<SpookQueue>(SpookQueueCollection);
+
+        private LiteCollection<UsageLog> UsageCollection
+            => database.GetCollection<UsageLog>(UsageLog);
 
         public SpookeningService(DiscordSocketClient client, LiteDatabase database, string configFilePath)
         {
@@ -110,6 +116,11 @@ namespace CSSBot.Services.TheSpookening
                     {
                         Task.Factory.StartNew(() => ResetAllNames());
                     }
+                    else if (DateTime.Now.Month == 12 && DateTime.Now.Day == 3 && DateTime.Now.Minute == 1 && DateTime.Now.Hour == 0)
+                    {
+                        // drop db after a month
+                        DropSpookDatabase();
+                    }
                 }
             }, null, 0, PollRate);
         }
@@ -119,6 +130,65 @@ namespace CSSBot.Services.TheSpookening
             // drop collections of both tables
             this.database.DropCollection(SpookedUserCollection);
             this.database.DropCollection(SpookQueueCollection);
+            this.database.DropCollection(UsageLog);
+        }
+
+        // checks to see if the userId specified is within the rate limit
+        public int GetRateLimitCount(string actionType, ulong? userId, TimeSpan timeRange)
+        {
+            return UsageCollection
+                .Find(x =>
+                    (x.UserId == userId || userId == null) && x.ActionType == actionType && x.Timestamp > (DateTimeOffset.UtcNow - timeRange))
+                .Count();
+        }
+
+        public void RegisterAction(string actionType, ulong userId)
+        {
+            UsageCollection
+                .Insert(new UsageLog()
+                {
+                    ActionType = actionType,
+                    UserId = userId,
+                    Timestamp = DateTimeOffset.UtcNow,
+                });
+        }
+
+        public bool CheckUserRerollName(ulong userId)
+        {
+            var count = GetRateLimitCount("reroll", userId, TimeSpan.FromDays(1));
+            var globalCount = GetRateLimitCount("reroll", null, TimeSpan.FromHours(2));
+            var result = count < 3 && globalCount < 10;
+            if (result)
+            {
+                RegisterAction("reroll", userId);
+            }
+            return result;
+        }
+
+        public bool CheckUserJoke(ulong userId)
+        {
+            var count = GetRateLimitCount("joke", userId, TimeSpan.FromDays(1));
+            var globalCount = GetRateLimitCount("joke", null, TimeSpan.FromHours(2));
+            var result = count < 5 && globalCount < 3;
+            if (result)
+            {
+                RegisterAction("joke", userId);
+            }
+            return result;
+        }
+
+        public bool CheckUserDoot(ulong userId) // also use for spoop
+        {
+            // yes I am copy pasting and no I do not care
+            // could clean this up later
+            var count = GetRateLimitCount("doot", userId, TimeSpan.FromHours(2));
+            var globalCount = GetRateLimitCount("doot", null, TimeSpan.FromHours(2));
+            var result = count < 3 && globalCount < 5;
+            if (result)
+            {
+                RegisterAction("doot", userId);
+            }
+            return result;
         }
 
         // reacts to emojis with the same emojis if user is spooky

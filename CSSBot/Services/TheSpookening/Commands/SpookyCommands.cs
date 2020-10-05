@@ -56,10 +56,17 @@ namespace CSSBot.Commands
             {
                 if (spookening.CanUserUseSpookyCommands(Context.User.Id))
                 {
-                    await Context.Message.AddReactionAsync(new Emoji("💀"));
-                    await Context.Message.AddReactionAsync(new Emoji("🎺"));
+                    if (spookening.CheckUserDoot(Context.User.Id))
+                    {
+                        await Context.Message.AddReactionAsync(new Emoji("💀"));
+                        await Context.Message.AddReactionAsync(new Emoji("🎺"));
 
-                    await ReplyAsync("doot doot\nhttps://www.youtube.com/watch?v=eVrYbKBrI7o");
+                        await ReplyAsync("doot doot\nhttps://www.youtube.com/watch?v=eVrYbKBrI7o");
+                    }
+                    else
+                    {
+                        await ReplyAsync("2doot5me, please try again later");
+                    }
                 }
                 else
                 {
@@ -89,11 +96,18 @@ namespace CSSBot.Commands
             {
                 if (spookening.CanUserUseSpookyCommands(Context.User.Id))
                 {
-                    await Context.Message.AddReactionAsync(new Emoji("🎃"));
-                    await Context.Message.AddReactionAsync(new Emoji("🕺"));
-                    await Context.Message.AddReactionAsync(new Emoji("💃"));                    
+                    if (spookening.CheckUserDoot(Context.User.Id))
+                    {
+                        await Context.Message.AddReactionAsync(new Emoji("🎃"));
+                        await Context.Message.AddReactionAsync(new Emoji("🕺"));
+                        await Context.Message.AddReactionAsync(new Emoji("💃"));
 
-                    await ReplyAsync("so spoopy\nhttps://www.youtube.com/watch?v=n_qbGJuxCYY");
+                        await ReplyAsync("so spoopy\nhttps://www.youtube.com/watch?v=n_qbGJuxCYY");
+                    }
+                    else
+                    {
+                        await ReplyAsync("sorry but i just need a minute, that was too much for me");
+                    }
                 }
                 else
                 {
@@ -119,7 +133,7 @@ namespace CSSBot.Commands
         public async Task ResetAllNames()
         {
             var _ = Task.Factory.StartNew(() => spookening.ResetAllNames());
-            await ReplyAsync("k");
+            await ReplyAsync("k, brace for rate limits");
         }
 
         [Command("AdminFixQueue")]
@@ -157,14 +171,21 @@ namespace CSSBot.Commands
                     // if the user is spooked, then allow them to respook themselves
                     if (spookening.IsUserSpooked(Context.User.Id))
                     {
-                        try
+                        if (spookening.CheckUserRerollName(Context.User.Id))
                         {
-                            spookening.RespookUser(Context.User.Id);
+                            try
+                            {
+                                spookening.RespookUser(Context.User.Id);
+                            }
+                            catch (Exception e)
+                            {
+                                // silently catch all errors
+                                Console.WriteLine($"Encountered exception when respooking {e}");
+                            }
                         }
-                        catch (Exception e)
+                        else
                         {
-                            // silently catch all errors
-                            Console.WriteLine($"Encountered exception when respooking {e}");
+                            await ReplyAsync("Uhhhhhhhhhhhhhhhh I'm out of names. I'll think of more tomorrow.");
                         }
                     }
                 }
@@ -249,7 +270,14 @@ namespace CSSBot.Commands
             {
                 if (spookening.CanUserUseSpookyCommands(Context.User.Id))
                 {
-                    await ReplyAsync(spookening.GetRandomSpookyJoke);
+                    if (spookening.CheckUserJoke(Context.User.Id))
+                    {
+                        await ReplyAsync(spookening.GetRandomSpookyJoke);
+                    }
+                    else
+                    {
+                        await ReplyAsync("What's the deal with airline food?\n\nnah but actually just try again in a bit.");
+                    }
                 }
                 else
                 {
