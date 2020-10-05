@@ -1,0 +1,13 @@
+name: Greetings
+
+on: [pull_request, issues]
+
+jobs:
+  greeting:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/first-interaction@v1
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        issue-message: 'Hello! The CSSBot project is only intended for use in the CSS Discord. Please keep that scope in mind when reporting bugs or requesting new features, as the bot is very much purpose-built for only this one server.'
+        pr-message: 'Hello! Thank you for your contribution. Please remember that this project is only intended for use in the CSS Discord, and isn''t meant to be an all-purpose bot for outside of this context.'
