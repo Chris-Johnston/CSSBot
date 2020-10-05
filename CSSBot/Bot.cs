@@ -203,7 +203,7 @@ namespace CSSBot
                 telemetryClient.TrackTrace(arg.Message, appInsightsSeverity.Value, properties: properties);
             }
 
-            if (arg.Severity > Discord.LogSeverity.Info)
+            if (arg.Severity <= Discord.LogSeverity.Debug)
             {
                 // log stuff to console
                 // could also log to a file if needed later on
