@@ -1,4 +1,4 @@
-﻿using CSSBot.Services.TheSpookening;
+using CSSBot.Services.TheSpookening;
 using Discord;
 using Discord.Commands;
 using LiteDB;
@@ -60,6 +60,40 @@ namespace CSSBot.Commands
                     await Context.Message.AddReactionAsync(new Emoji("🎺"));
 
                     await ReplyAsync("doot doot\nhttps://www.youtube.com/watch?v=eVrYbKBrI7o");
+                }
+                else
+                {
+                    await ReplyAsync("You aren't spooky enough to use this command.");
+                }
+            }
+            else
+            {
+                await ReplyAsync("nah");
+            }
+        }
+
+        /// <summary>
+        /// Adds the Jack-o-Lantern, man dancing, and woman dancing emoji as a reaction to the user's
+        /// command message and replies back with the youtube link for
+        /// the dancing pumpkin man
+        /// </summary>
+        /// <returns></returns>
+        [Command("Spoop")]
+        [Alias("SpoopyDance")]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.ViewChannel | GuildPermission.SendMessages)]
+        public async Task Spoop()
+        {
+            // if october
+            if (DateTime.Now.Month == 10)
+            {
+                if (spookening.CanUserUseSpookyCommands(Context.User.Id))
+                {
+                    await Context.Message.AddReactionAsync(new Emoji("🎃"));
+                    await Context.Message.AddReactionAsync(new Emoji("🕺"));
+                    await Context.Message.AddReactionAsync(new Emoji("💃"));                    
+
+                    await ReplyAsync("so spoopy\nhttps://www.youtube.com/watch?v=n_qbGJuxCYY");
                 }
                 else
                 {
