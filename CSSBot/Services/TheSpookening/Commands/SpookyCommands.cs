@@ -284,6 +284,10 @@ namespace CSSBot.Commands
                     await ReplyAsync("You aren't spooky enough to use this command.");
                 }
             }
+            else
+            {
+                await ReplyAsync("uhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh nahhhhhhhhhhhhhhhhhhhhhh");
+            }
         }
     }
 }
