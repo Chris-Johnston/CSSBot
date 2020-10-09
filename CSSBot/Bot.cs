@@ -66,7 +66,8 @@ namespace CSSBot
             using var loggerFactory = LoggerFactory.Create(builder =>
             {
                 builder
-                    .SetMinimumLevel(LogLevel.Debug)
+                    .AddFilter(x => true) // enable it all
+                    .SetMinimumLevel(LogLevel.Trace)
                     .AddConsole()
                     .AddDebug();
 
@@ -76,6 +77,7 @@ namespace CSSBot
                         x =>
                         {
                             x.IncludeScopes = true;
+                            x.TrackExceptionsAsExceptionTelemetry = true;
                             x.TrackExceptionsAsExceptionTelemetry = true;
                         });
                 }
@@ -137,7 +139,7 @@ namespace CSSBot
             // set up our logging function
             m_client.Log += Log;
             m_client.Log += async (logMessage) => {
-                logger.Log(logMessage.Severity.ToLogLevel(), exception: logMessage.Exception, message: logMessage.Message, args: logMessage.Source);
+                logger.Log(logMessage.Severity.ToLogLevel(), exception: logMessage.Exception, message: logMessage.Message, logMessage.Source, logMessage.Exception);
             };
 
             // show an invite link when we are ready to go
@@ -246,7 +248,7 @@ namespace CSSBot
         // todo: remove this and use DI instead of statics
         public async static Task Log(Discord.LogMessage arg)
         {
-            logger?.Log(arg.Severity.ToLogLevel(), exception: arg.Exception, message: arg.Message, args: arg.Source);
+            logger?.Log(arg.Severity.ToLogLevel(), exception: arg.Exception, message: arg.Message, arg.Source, arg.Exception);
             var appInsightsSeverity = ConvertLogSeverity(arg.Severity);
             if (appInsightsSeverity != null && telemetryClient != null)
             {
