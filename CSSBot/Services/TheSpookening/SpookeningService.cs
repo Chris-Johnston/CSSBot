@@ -260,7 +260,7 @@ namespace CSSBot.Services.TheSpookening
             }
         }
 
-        public void ProcessSpooking()
+        public async Task ProcessSpooking()
         {
             // process spookenings that have been issued earlier that day
             foreach (var spook in SpookUserQueue.Find(x => !x.Expired))
@@ -269,17 +269,25 @@ namespace CSSBot.Services.TheSpookening
                 if (IsUserSpooked(spook.UserToSpookId))
                     continue;
 
-                var user = client.GetGuild(TargetGuildId).GetUser(spook.UserToSpookId);
-                var by = client.GetGuild(TargetGuildId).GetUser(spook.SpookedById);
+                var guild = client.GetGuild(TargetGuildId);
+                await guild.DownloadUsersAsync();
+
+                var user = guild.GetUser(spook.UserToSpookId);
+                var by = guild.GetUser(spook.SpookedById);
+
 
                 if (user == null)
                 {
-                    logger.LogDebug($"User `user` [{spook.UserToSpookId}] was null.");
+                    logger.LogWarning($"User `user` [{spook.UserToSpookId}] was null.");
+
+                    // could potentially result in this repeating a lot?
+                    continue;
                 }
 
                 if (by == null)
                 {
-                    logger.LogDebug($"User `by` [{spook.SpookedById}] was null.");
+                    logger.LogWarning($"User `by` [{spook.SpookedById}] was null.");
+                    continue;
                 }
 
                 SpookUser(user, by);
@@ -351,7 +359,9 @@ namespace CSSBot.Services.TheSpookening
             
 
             // process the queue of spooked people
-            ProcessSpooking();
+            ProcessSpooking()
+                .GetAwaiter()
+                .GetResult();
 
             Task.Factory.StartNew(async () =>
             {

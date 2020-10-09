@@ -210,7 +210,7 @@ namespace CSSBot.Commands
         [RequireOwner]
         public async Task ManuallySpookUsers()
         {
-            spookening.ProcessSpooking();
+            await spookening.ProcessSpooking();
             await ReplyAsync("Wow, that was spooky");
         }
 
