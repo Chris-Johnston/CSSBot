@@ -165,7 +165,7 @@ namespace CSSBot.Services.TheSpookening
 
         public bool CheckUserRerollName(ulong userId)
         {
-            var count = GetRateLimitCount("reroll", userId, TimeSpan.FromDays(1));
+            var count = GetRateLimitCount("reroll", userId, TimeSpan.FromHours(18));
             var globalCount = GetRateLimitCount("reroll", null, TimeSpan.FromHours(2));
             var result = count < 3 && globalCount < 10;
             if (result)
@@ -177,7 +177,7 @@ namespace CSSBot.Services.TheSpookening
 
         public bool CheckUserJoke(ulong userId)
         {
-            var count = GetRateLimitCount("joke", userId, TimeSpan.FromDays(1));
+            var count = GetRateLimitCount("joke", userId, TimeSpan.FromHours(18));
             var globalCount = GetRateLimitCount("joke", null, TimeSpan.FromHours(2));
             var result = count < 5 && globalCount < 3;
             if (result)
