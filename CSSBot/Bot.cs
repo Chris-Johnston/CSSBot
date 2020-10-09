@@ -59,7 +59,7 @@ namespace CSSBot
         private IServiceProvider _services;
         private LiteDatabase _database;
         private MessageRetryService messageRetry;
-        private ILogger logger;
+        private static ILogger logger;
 
         private void SetupLogging()
         {
@@ -80,8 +80,8 @@ namespace CSSBot
                         });
                 }
             });
-            this.logger = loggerFactory.CreateLogger<Bot>();
-            this.logger.LogDebug("Logger initialized.");
+            logger = loggerFactory.CreateLogger<Bot>();
+            logger.LogDebug("Logger initialized.");
 
             // TODO: migrate away from DIY config and use IHostBuilder supported config
             // TODO: consider moving entry point from calling and waiting forever to using stuff that Host can do
@@ -243,8 +243,10 @@ namespace CSSBot
                 $"Invite URL: <https://discordapp.com/oauth2/authorize?client_id={application.Id}&scope=bot>"));
         }
 
+        // todo: remove this and use DI instead of statics
         public async static Task Log(Discord.LogMessage arg)
         {
+            logger?.Log(arg.Severity.ToLogLevel(), exception: arg.Exception, message: arg.Message, args: arg.Source);
             var appInsightsSeverity = ConvertLogSeverity(arg.Severity);
             if (appInsightsSeverity != null && telemetryClient != null)
             {
