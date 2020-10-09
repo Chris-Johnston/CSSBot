@@ -222,6 +222,11 @@ namespace CSSBot
                 // If the command failed
                 if (!result.IsSuccess)
                 {
+                    if (result is ExecuteResult exeResult)
+                    {
+                        logger.LogError(exeResult.Exception, result.ErrorReason);
+                    }
+
                     // log the error
                     Discord.LogMessage errorMessage = new Discord.LogMessage(Discord.LogSeverity.Warning, "CommandHandler", result.ErrorReason);
                     await Log(errorMessage);
