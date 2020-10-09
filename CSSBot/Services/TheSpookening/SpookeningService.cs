@@ -148,7 +148,7 @@ namespace CSSBot.Services.TheSpookening
         {
             return UsageCollection
                 .Find(x =>
-                    (x.UserId == userId || userId == null) && x.ActionType == actionType && x.Timestamp > (DateTimeOffset.UtcNow - timeRange))
+                    (x.UserId == userId || userId == null) && x.ActionType == actionType && x.Timestamp > DateTimeOffset.UtcNow.Add(-timeRange))
                 .Count();
         }
 
