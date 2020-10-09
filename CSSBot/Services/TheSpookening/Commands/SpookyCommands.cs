@@ -206,7 +206,7 @@ namespace CSSBot.Commands
             }
         }
 
-        [Command("AdminProcessSpooks")]
+        [Command("AdminProcessSpooks", RunMode=RunMode.Async)]
         [RequireOwner]
         public async Task ManuallySpookUsers()
         {
