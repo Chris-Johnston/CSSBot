@@ -80,8 +80,8 @@ namespace CSSBot
                         });
                 }
             });
-            var logger = loggerFactory.CreateLogger<Bot>();
-            logger.LogDebug("Logger initialized.");
+            this.logger = loggerFactory.CreateLogger<Bot>();
+            this.logger.LogDebug("Logger initialized.");
 
             // TODO: migrate away from DIY config and use IHostBuilder supported config
             // TODO: consider moving entry point from calling and waiting forever to using stuff that Host can do
