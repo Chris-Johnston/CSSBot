@@ -121,7 +121,7 @@ namespace CSSBot.Commands
             }
 
             // create role
-            var role = await Context.Guild.CreateRoleAsync(roleName, permissions: GuildPermissions.None);
+            var role = await Context.Guild.CreateRoleAsync(roleName, permissions: GuildPermissions.None, isMentionable: true);
             await role.ModifyAsync(x => x.Mentionable = true);
 
             await ackMessage.ModifyAsync(x => x.Content = ackMessage.Content + $"\nCreated role {role}.");

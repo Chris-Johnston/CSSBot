@@ -201,13 +201,13 @@ namespace CSSBot.Reminders
         public int RemoveReminder(ulong guildId, int id)
         {
             return m_database.GetCollection<Reminder>("Reminders")
-                .Delete(x => x.GuildId == guildId && x.ID == id);
+                .DeleteMany(x => x.GuildId == guildId && x.ID == id);
         }
 
         public int RemoveReminderAuthor(ulong guildId, int id, ulong authorId)
         {
             return m_database.GetCollection<Reminder>("Reminders")
-                .Delete(x => x.GuildId == guildId && x.ID == id && x.AuthorId == authorId);
+                .DeleteMany(x => x.GuildId == guildId && x.ID == id && x.AuthorId == authorId);
         }
 
         public Reminder AddReminder(ulong guildId, ulong channelID,

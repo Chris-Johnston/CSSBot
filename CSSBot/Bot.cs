@@ -17,11 +17,41 @@ using CSSBot.Services.Courses;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
+using Microsoft.Extensions.Logging.ApplicationInsights;
+using System.Runtime.CompilerServices;
 
 namespace CSSBot
 {
+    public static class LogSeverityExtensions
+    {
+        public static LogLevel ToLogLevel(this LogSeverity severity)
+        {
+            switch (severity)
+            {
+                case LogSeverity.Critical:
+                    return LogLevel.Critical;
+                case LogSeverity.Error:
+                    return LogLevel.Error;
+                case LogSeverity.Warning:
+                    return LogLevel.Warning;
+                case LogSeverity.Info:
+                    return LogLevel.Information;
+                case LogSeverity.Debug:
+                    return LogLevel.Debug;
+                case LogSeverity.Verbose:
+                default:
+                    return LogLevel.Trace;
+            }
+        }
+    }
+
     public class Bot
     {
+        
+
         private static TelemetryClient telemetryClient = null; // app insights logging
 
         private DiscordSocketClient m_client;
@@ -29,9 +59,37 @@ namespace CSSBot
         private IServiceProvider _services;
         private LiteDatabase _database;
         private MessageRetryService messageRetry;
+        private ILogger logger;
+
+        private void SetupLogging()
+        {
+            using var loggerFactory = LoggerFactory.Create(builder =>
+            {
+                builder
+                    .SetMinimumLevel(LogLevel.Debug)
+                    .AddConsole()
+                    .AddDebug();
+
+                if (!string.IsNullOrWhiteSpace(Program.GlobalConfiguration.Data.AppInsightsInstrumentationKey))
+                {
+                    builder.AddApplicationInsights(Program.GlobalConfiguration.Data.AppInsightsInstrumentationKey,
+                        x =>
+                        {
+                            x.IncludeScopes = true;
+                            x.TrackExceptionsAsExceptionTelemetry = true;
+                        });
+                }
+            });
+            var logger = loggerFactory.CreateLogger<Bot>();
+            logger.LogDebug("Logger initialized.");
+
+            // TODO: migrate away from DIY config and use IHostBuilder supported config
+            // TODO: consider moving entry point from calling and waiting forever to using stuff that Host can do
+        }
 
         public async Task Start()
         {
+            SetupLogging();
             // only set the telemetryClient if the key is set
             if (Program.GlobalConfiguration.Data.AppInsightsInstrumentationKey != null)
             {
@@ -63,10 +121,11 @@ namespace CSSBot
                 .AddSingleton(m_client)
                 .AddSingleton(_commands)
                 .AddSingleton(_database)
+                .AddSingleton(logger)
                 .AddSingleton(new CounterService(_database, m_client))
                 .AddSingleton(new ReminderService(m_client, _database))
                 .AddSingleton(new TagService(_database))
-                .AddSingleton(new SpookeningService(m_client, _database, Program.GlobalConfiguration.Data.SpookyConfigJson))
+                .AddSingleton(new SpookeningService(m_client, _database, Program.GlobalConfiguration.Data.SpookyConfigJson, logger))
                 .AddSingleton(messageRetry)
                 .AddSingleton(new MinesweeperSolutionService())
                 .AddSingleton(new CourseService(m_client))
@@ -77,6 +136,9 @@ namespace CSSBot
 
             // set up our logging function
             m_client.Log += Log;
+            m_client.Log += async (logMessage) => {
+                logger.Log(logMessage.Severity.ToLogLevel(), exception: logMessage.Exception, message: logMessage.Message, args: logMessage.Source);
+            };
 
             // show an invite link when we are ready to go
             m_client.Ready += Client_Ready;

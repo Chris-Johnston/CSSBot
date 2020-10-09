@@ -2,6 +2,7 @@ using CSSBot.Services.TheSpookening;
 using Discord;
 using Discord.Commands;
 using LiteDB;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -16,10 +17,13 @@ namespace CSSBot.Commands
         //private readonly LiteDatabase database;
         private readonly SpookeningService spookening;
 
-        public SpookyCommands(LiteDatabase db, SpookeningService spookyService)
+        private readonly ILogger logger;
+
+        public SpookyCommands(LiteDatabase db, SpookeningService spookyService, ILogger logger)
         {
             // database = db;
             spookening = spookyService;
+            this.logger = logger;
         }
         // this previously contained many commands for user nickname manipulation,
         // but that got really messy quick and turned out to be a bad idea
@@ -180,7 +184,8 @@ namespace CSSBot.Commands
                             catch (Exception e)
                             {
                                 // silently catch all errors
-                                Console.WriteLine($"Encountered exception when respooking {e}");
+                                // Console.WriteLine($"Encountered exception when respooking {e}");
+                                logger.LogError(e, $"Exception when re-spooking user {Context.User.Id}.");
                                 throw;
                             }
                         }

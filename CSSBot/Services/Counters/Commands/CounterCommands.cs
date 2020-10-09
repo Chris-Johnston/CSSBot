@@ -114,7 +114,7 @@ namespace CSSBot.Counters.Commands
         [RequireUserPermission(Discord.GuildPermission.ManageChannels)]
         public async Task Delete([Name("Name")]string counterText)
         { 
-            int count = _countService.Counters.Delete(x => x.Text.ToLower().Equals(counterText.ToLower()));
+            int count = _countService.Counters.DeleteMany(x => x.Text.ToLower().Equals(counterText.ToLower()));
             if (count == 0)
             {
                 await ReplyAsync("I couldn't find any matching counters to delete.");

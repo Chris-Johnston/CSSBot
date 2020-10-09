@@ -2,6 +2,7 @@
 using Discord;
 using Discord.WebSocket;
 using LiteDB;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -60,19 +61,22 @@ namespace CSSBot.Services.TheSpookening
         private const string UsageLog = nameof(UsageLog) + "Collection";
         private readonly DiscordSocketClient client;
 
-        private LiteCollection<SpookedUser> GetSpookedUserCollection
+        private ILiteCollection<SpookedUser> GetSpookedUserCollection
             => database.GetCollection<SpookedUser>(SpookedUserCollection);
 
-        private LiteCollection<SpookQueue> SpookUserQueue
+        private ILiteCollection<SpookQueue> SpookUserQueue
             => database.GetCollection<SpookQueue>(SpookQueueCollection);
 
-        private LiteCollection<UsageLog> UsageCollection
+        private ILiteCollection<UsageLog> UsageCollection
             => database.GetCollection<UsageLog>(UsageLog);
 
-        public SpookeningService(DiscordSocketClient client, LiteDatabase database, string configFilePath)
+        private readonly ILogger logger;
+
+        public SpookeningService(DiscordSocketClient client, LiteDatabase database, string configFilePath, ILogger logger)
         {
             this.client = client;
             this.database = database;
+            this.logger = logger;
 
             // hack: too lazy to set up a json when testing
             if (configFilePath == null) return;
@@ -96,10 +100,12 @@ namespace CSSBot.Services.TheSpookening
                 {
                     if (IsTimeMidnight(DateTime.Now.TimeOfDay) && DateTime.Now.Day == 31)
                     {
+                        logger?.LogInformation("Halloween Midnight timer triggered");
                         OnHalloweenMidnight();
                     }
                     else if (IsTimeMidnight(DateTime.Now.TimeOfDay))
                     {
+                        logger?.LogInformation("Midnight timer triggered");
                         OnMidnight();
                     }
                     else
@@ -114,15 +120,19 @@ namespace CSSBot.Services.TheSpookening
                     // reset all of the names a few days later
                     if (DateTime.Now.Month == 11 && DateTime.Now.Day == 3 && DateTime.Now.Minute == 1 && DateTime.Now.Hour == 0)
                     {
+                        logger?.LogWarning("Starting reset all names task.");
                         Task.Factory.StartNew(() => ResetAllNames());
                     }
                     else if (DateTime.Now.Month == 12 && DateTime.Now.Day == 3 && DateTime.Now.Minute == 1 && DateTime.Now.Hour == 0)
                     {
+                        logger?.LogWarning("DROPPING Spookening DB because it is Dec.");
                         // drop db after a month
                         DropSpookDatabase();
                     }
                 }
             }, null, 0, PollRate);
+
+            logger?.LogDebug("Initialized spookening service.");
         }
 
         public void DropSpookDatabase()
@@ -543,9 +553,9 @@ namespace CSSBot.Services.TheSpookening
         public void ForceSpookOverride(ulong userId, string originalNick)
         {
             // remove this user from being in the queue
-            SpookUserQueue.Delete(x => x.UserToSpookId == userId);
+            SpookUserQueue.DeleteMany(x => x.UserToSpookId == userId);
             // and from the table if they are already for some reason
-            GetSpookedUserCollection.Delete(x => x.SpookedUserId == userId);
+            GetSpookedUserCollection.DeleteMany(x => x.SpookedUserId == userId);
 
             GetSpookedUserCollection.Insert(new SpookedUser()
             {

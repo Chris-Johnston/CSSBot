@@ -46,7 +46,7 @@ namespace CSSBot.Counters
         /// <summary>
         /// The list of all the counters
         /// </summary>
-        public LiteCollection<Counter> Counters
+        public ILiteCollection<Counter> Counters
         {
             get
             {

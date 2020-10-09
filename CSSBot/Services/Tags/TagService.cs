@@ -140,7 +140,7 @@ namespace CSSBot.Tags
         /// <returns></returns>
         public void RemoveTagByName(string tagName, ulong guildId)
         {
-            _db.GetCollection<Tag>(TagTable).Delete(x => x.TagKey == NormalizeTagStr(tagName) && x.GuildId == guildId);
+            _db.GetCollection<Tag>(TagTable).DeleteMany(x => x.TagKey == NormalizeTagStr(tagName) && x.GuildId == guildId);
         }
 
         /// <summary>
@@ -150,7 +150,7 @@ namespace CSSBot.Tags
         /// <param name="guildId"></param>
         public void RemoveTagById(int tagId, ulong guildId)
         {
-            _db.GetCollection<Tag>(TagTable).Delete(x => x.Id == tagId && x.GuildId == guildId);
+            _db.GetCollection<Tag>(TagTable).DeleteMany(x => x.Id == tagId && x.GuildId == guildId);
         }
         
         /// <summary>
@@ -159,7 +159,7 @@ namespace CSSBot.Tags
         /// <param name="authorId"></param>
         public void RemoveAllTagsByUser(ulong authorId, ulong guildId)
         {
-            _db.GetCollection<Tag>(TagTable).Delete(x => x.GuildId == guildId && x.AuthorId == authorId );
+            _db.GetCollection<Tag>(TagTable).DeleteMany(x => x.GuildId == guildId && x.AuthorId == authorId );
         }
 
         /// <summary>
@@ -169,7 +169,7 @@ namespace CSSBot.Tags
         /// <param name="guildId"></param>
         public void UnBanUser(ulong userid, ulong guildId)
         {
-            _db.GetCollection<TagBannedUser>(TagBanTable).Delete(x => x.UserId == userid && x.GuildId == guildId);
+            _db.GetCollection<TagBannedUser>(TagBanTable).DeleteMany(x => x.UserId == userid && x.GuildId == guildId);
         }
 
         /// <summary>
