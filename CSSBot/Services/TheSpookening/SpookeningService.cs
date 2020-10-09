@@ -271,7 +271,17 @@ namespace CSSBot.Services.TheSpookening
 
                 var user = client.GetGuild(TargetGuildId).GetUser(spook.UserToSpookId);
                 var by = client.GetGuild(TargetGuildId).GetUser(spook.SpookedById);
-                
+
+                if (user == null)
+                {
+                    logger.LogDebug($"User `user` [{spook.UserToSpookId}] was null.");
+                }
+
+                if (by == null)
+                {
+                    logger.LogDebug($"User `by` [{spook.SpookedById}] was null.");
+                }
+
                 SpookUser(user, by);
 
                 // mark this item as expired
