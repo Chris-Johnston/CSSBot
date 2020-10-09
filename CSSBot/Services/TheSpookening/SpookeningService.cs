@@ -204,6 +204,10 @@ namespace CSSBot.Services.TheSpookening
         // reacts to emojis with the same emojis if user is spooky
         private async Task MimicSpookyEmojiWithReactions(SocketMessage arg)
         {
+            // ignore bots
+            if (arg.Author.IsBot)
+                return;
+
             if (DateTime.Now.Month == 10)
             {
                 List<Emoji> toReact = new List<Emoji>();
