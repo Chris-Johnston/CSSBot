@@ -130,7 +130,7 @@ namespace CSSBot
                 .AddSingleton(new SpookeningService(m_client, _database, Program.GlobalConfiguration.Data.SpookyConfigJson, logger))
                 .AddSingleton(messageRetry)
                 .AddSingleton(new MinesweeperSolutionService())
-                .AddSingleton(new CourseService(m_client))
+                .AddSingleton(new CourseService(m_client, logger))
                 .BuildServiceProvider();
 
             await InstallCommandsAsync();
