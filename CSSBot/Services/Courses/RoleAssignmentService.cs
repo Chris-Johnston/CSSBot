@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -11,16 +12,41 @@ namespace CSSBot.Services.Courses
     {
         private readonly DiscordSocketClient client;
         private readonly Emoji check = new Emoji("\u2705");
-        public CourseService(DiscordSocketClient client)
+        private readonly ILogger logger;
+        public CourseService(DiscordSocketClient client, ILogger logger)
         {
             this.client = client;
 
             this.client.ReactionAdded += Client_ReactionAdded;
             this.client.ReactionRemoved += Client_ReactionRemoved;
+            this.logger = logger;
         }
 
-        private bool FromCurrentUser(IUserMessage message)
+        private bool CheckBotIsMessageAuthor(IUserMessage message)
         {
+            if (message == null)
+            {
+                return false;
+            }
+
+            if (message?.Author?.Id == null)
+            {
+                logger.LogWarning("Message had a null author.");
+                return false;
+            }
+
+            if (client?.CurrentUser?.Id == null)
+            {
+                logger.LogWarning("Check for valid user had a null current user.");
+                return false;
+            }
+
+            if (message.Author?.IsBot == true)
+            {
+                logger.LogInformation("Failed to add user to course, was a bot.");
+                return false;
+            }
+
             return message.Author.Id == client.CurrentUser.Id;
         }
 
@@ -40,9 +66,13 @@ namespace CSSBot.Services.Courses
         {
             // get message, check conditions
             var m = await message.GetOrDownloadAsync();
+            if (m == null)
+            {
+                logger.LogWarning($"Failed to download message with id {message.Id}");
+            }
             var textChannel = channel as IGuildChannel;
             // only message from the bot
-            if (!FromCurrentUser(m))
+            if (!CheckBotIsMessageAuthor(m))
                 return;
             // get the role from the first part of the message
             var role = GetRole(m, textChannel, reaction);
@@ -80,11 +110,24 @@ namespace CSSBot.Services.Courses
 
         private async Task Client_ReactionAdded(Discord.Cacheable<Discord.IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction)
         {
+            // must be checkmark, copy this filter earlier on as a faster check
+            if (reaction == null || reaction.Emote.Name != check.Name)
+                return;
+
             // get the message
             var m = await message.GetOrDownloadAsync();
+            if (m == null)
+            {
+                logger.LogWarning($"Failed to download message with id {message.Id}");
+            }
             var textChannel = channel as IGuildChannel;
-            // only from the bot
-            if (!FromCurrentUser(m))
+            if (textChannel == null)
+            {
+                logger.LogDebug($"Reaction added to channel that was not IGuildChannel. channel Id: {channel.Id} message ID: {message.Id}");
+            }
+
+            // ignore if it's from the bot
+            if (!CheckBotIsMessageAuthor(m))
                 return;
             var role = GetRole(m, textChannel, reaction);
             if (role == null)
