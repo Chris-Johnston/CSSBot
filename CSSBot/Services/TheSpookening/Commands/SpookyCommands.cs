@@ -229,7 +229,7 @@ namespace CSSBot.Commands
         [Command("gs")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task SuperSecretBackdoor(string message)
+        public async Task SuperSecretBackdoor([Remainder] string message)
         {
             if (Context.Guild.Id != spookening.TargetGuildId)
                 return;
