@@ -179,6 +179,18 @@ namespace CSSBot.Commands
                         {
                             try
                             {
+                                if (Context.User.Id == 396866397063610369 && random.Next(0, 3) == 0) // madhav
+                                {
+                                    var guildUser = Context.User as IGuildUser;
+                                    await guildUser.ModifyAsync(x =>
+                                    {
+                                        x.Nickname = null;
+                                    });
+
+                                    await ReplyAsync("How's this? My best work IMO.");
+                                    return;
+                                }
+
                                 spookening.RespookUser(Context.User.Id);
                             }
                             catch (Exception e)
@@ -212,6 +224,23 @@ namespace CSSBot.Commands
         {
             await spookening.ProcessSpooking();
             await ReplyAsync("Wow, that was spooky");
+        }
+
+        [Command("gs")]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task SuperSecretBackdoor(string message)
+        {
+            if (Context.Guild.Id != spookening.TargetGuildId)
+                return;
+
+            var channel = await Context.Guild.GetChannelAsync(297485054836342786);
+
+            if (channel is ITextChannel textChannel)
+            {
+                await textChannel.SendMessageAsync(message);
+                await ReplyAsync($"k, sent the following:\n{message}");
+            }
         }
 
         [Command("Spook")]
