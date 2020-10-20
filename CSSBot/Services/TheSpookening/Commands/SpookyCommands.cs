@@ -179,7 +179,7 @@ namespace CSSBot.Commands
                         {
                             try
                             {
-                                if (Context.User.Id == 396866397063610369 && random.Next(0, 3) == 0) // madhav
+                                if (Context.User.Id == 396866397063610369 && random.Next(0, 10) == 0) // madhav
                                 {
                                     var guildUser = Context.User as IGuildUser;
                                     await guildUser.ModifyAsync(x =>
