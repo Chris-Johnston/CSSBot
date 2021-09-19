@@ -124,21 +124,21 @@ namespace CSSBot.Commands
             }
         }
 
-        [Command("AdminResetSpookName")]
-        [RequireOwner()]
-        public async Task ResetName(IGuildUser user)
-        {
-            spookening.ResetNickname(user.Id);
-            await ReplyAsync("k");
-        }
+        //[Command("AdminResetSpookName")]
+        //[RequireOwner()]
+        //public async Task ResetName(IGuildUser user)
+        //{
+        //    spookening.ResetNickname(user.Id);
+        //    await ReplyAsync("k");
+        //}
 
-        [Command("AdminResetAll")]
-        [RequireOwner()]
-        public async Task ResetAllNames()
-        {
-            var _ = Task.Factory.StartNew(() => spookening.ResetAllNames());
-            await ReplyAsync("k, brace for rate limits");
-        }
+        //[Command("AdminResetAll")]
+        //[RequireOwner()]
+        //public async Task ResetAllNames()
+        //{
+        //    var _ = Task.Factory.StartNew(() => spookening.ResetAllNames());
+        //    await ReplyAsync("k, brace for rate limits");
+        //}
 
         [Command("AdminFixQueue")]
         [RequireOwner]

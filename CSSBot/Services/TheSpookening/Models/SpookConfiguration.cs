@@ -14,6 +14,9 @@ namespace CSSBot.Services.TheSpookening.Models
         public ulong MessageChannelId { get; set; }
 
         [JsonProperty]
+        public ulong SpookyRoleId { get; set; }
+
+        [JsonProperty]
         public int SpookUserLimit { get; set; }
 
         [JsonProperty]

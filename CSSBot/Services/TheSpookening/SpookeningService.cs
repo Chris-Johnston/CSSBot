@@ -22,8 +22,13 @@ namespace CSSBot.Services.TheSpookening
         public ulong TargetGuildId
             => Configuration.TargetGuildId;
 
+        // where spook announcements are posted
         public ulong MessageChannelId
             => Configuration.MessageChannelId;
+
+        // role to add to spooked users
+        public ulong SpookyRoleId
+            => Configuration.SpookyRoleId;
 
         public int SpookUserLimit
             => Configuration.SpookUserLimit;
@@ -120,8 +125,9 @@ namespace CSSBot.Services.TheSpookening
                     // reset all of the names a few days later
                     if (DateTime.Now.Month == 11 && DateTime.Now.Day == 3 && DateTime.Now.Minute == 1 && DateTime.Now.Hour == 0)
                     {
-                        logger?.LogWarning("Starting reset all names task.");
-                        Task.Factory.StartNew(() => ResetAllNames());
+                        // 2021 - users change their own names, so let them deal with it
+                        // logger?.LogWarning("Starting reset all names task.");
+                        // Task.Factory.StartNew(() => ResetAllNames());
                     }
                     else if (DateTime.Now.Month == 12 && DateTime.Now.Day == 3 && DateTime.Now.Minute == 1 && DateTime.Now.Hour == 0)
                     {
@@ -238,11 +244,11 @@ namespace CSSBot.Services.TheSpookening
 
         public void ResetAllNames()
         {
-            foreach (var item in GetSpookedUserCollection.FindAll())
-            {
-                Thread.Sleep(5000);
-                ResetNickname(item.SpookedUserId);
-            }
+            //foreach (var item in GetSpookedUserCollection.FindAll())
+            //{
+            //    Thread.Sleep(5000);
+            //    ResetNickname(item.SpookedUserId);
+            //}
         }
 
         /// <summary>
@@ -376,7 +382,7 @@ namespace CSSBot.Services.TheSpookening
 ?Spook <@User> - Spooks a user the following night.
 ?Doot - Doot.
 ?SpookyJoke - Tells a spooky joke.
-?ThankMrSkeletal - Chooses a new (spooky) nickname
+?ThankMrSkeletal - Chooses a new (spooky) nickname.
 ```
 "
 );
@@ -426,27 +432,17 @@ namespace CSSBot.Services.TheSpookening
 
         private void SpookUser(SocketGuildUser user)
         {
-            var originalName = GetNameFromUser(user);
-
-            var newName = string.Format(GetRandomNicknameFormatter, originalName, ReverseString(originalName));
-
-            var safeOriginalName = SanitizeNickname(originalName);
-            var safeNewName = SanitizeNickname(newName);
-
+            //var message =
+            //    $"Uh-oh! **{safeOriginalName}** has been spooked and is now **{safeNewName}**! AHH! So scary!\n" +
+            //    $"\n{user.Mention} can now spook up to **{SpookUserLimit}** other people with `?spook @User`.";
+            // 2021 do not update nicknames
             var message =
-                $"Uh-oh! **{safeOriginalName}** has been spooked and is now **{safeNewName}**! AHH! So scary!\n" +
-                $"\n{user.Mention} can now spook up to **{SpookUserLimit}** other people with `?spook @User`.";
+                $"Uh-oh! {user.Mention} has been spooked! AHH! {user.Mention} can not spook up to **{SpookUserLimit}** other people with `?spook @User`.";
 
+            // don't care how bad this code is
             var _ = Task.Factory.StartNew(async () =>
             {
-                try
-                {
-                    await user.ModifyAsync(x => x.Nickname = Truncate(newName, 32));
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
+                await AddUserRoleAsync(user, $"Spooked by bot");
             });
 
             RegisterSpookedUser(user.Id, user.Nickname);
@@ -481,27 +477,17 @@ namespace CSSBot.Services.TheSpookening
 
         private void SpookUser(SocketGuildUser user, SocketGuildUser by)
         {
-            var originalName = GetNameFromUser(user);
-            var newName = string.Format(GetRandomNicknameFormatter, originalName, ReverseString(originalName));
-
-            var safeOriginalName = SanitizeNickname(originalName);
-            var safeNewName = SanitizeNickname(newName);
-
+            // 2021, do not automatically rename users
+            //var message =
+            //    $"Uh-oh! **{safeOriginalName}** has been spooked by **{by.Mention}** and is now **{safeNewName}**! Yikes!\n" +
+            //    $"\n{user.Mention} can now spook up to **{SpookUserLimit}** other people with `?spook @User`.";
             var message =
-                $"Uh-oh! **{safeOriginalName}** has been spooked by **{by.Mention}** and is now **{safeNewName}**! Yikes!\n" +
-                $"\n{user.Mention} can now spook up to **{SpookUserLimit}** other people with `?spook @User`.";
+                $"Uh-oh! {user.Mention} has ben spooked by {by.Mention}! Yikes!";
 
+            // don't care
             var _ = Task.Factory.StartNew(async () =>
             {
-                try
-                {
-                    // just in case their nickname is too long
-                    await user.ModifyAsync(x => x.Nickname = Truncate(newName, 32));
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
+                await AddUserRoleAsync(user, $"Spooked by {by.Mention}");
             });
 
             RegisterSpookedUser(user.Id, user.Nickname, by.Id);
@@ -513,6 +499,22 @@ namespace CSSBot.Services.TheSpookening
         {
             var channel = client.GetGuild(TargetGuildId).GetTextChannel(MessageChannelId);
             await channel.SendMessageAsync(message);
+        }
+
+        private async Task AddUserRoleAsync(SocketGuildUser user, string auditLogReason = null)
+        {
+            var role = client.GetGuild(TargetGuildId).GetRole(SpookyRoleId);
+
+            string logReason = auditLogReason ?? "BOO!";
+
+            try
+            {
+                await user.AddRoleAsync(role, options: new RequestOptions() { AuditLogReason = logReason });
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
 
         public bool DoesUserHaveSpooksRemaining(ulong userId)

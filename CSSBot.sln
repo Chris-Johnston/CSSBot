@@ -1,11 +1,16 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26228.12
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30413.136
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSSBot", "CSSBot\CSSBot.csproj", "{2D397C7F-71A8-4E2D-A0EE-FB4FD5292135}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CSSBot", "CSSBot\CSSBot.csproj", "{2D397C7F-71A8-4E2D-A0EE-FB4FD5292135}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSSBot.Tests", "CSSBot.Tests\CSSBot.Tests.csproj", "{300D3B37-5C2C-4178-B852-7077B1BA5452}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CSSBot.Tests", "CSSBot.Tests\CSSBot.Tests.csproj", "{300D3B37-5C2C-4178-B852-7077B1BA5452}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5D07B6DF-3B17-4FD7-9DED-55155A0B1261}"
+	ProjectSection(SolutionItems) = preProject
+		nuget.config = nuget.config
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,5 +29,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {41C27D16-0C79-41D4-BE4A-7B980C23CF36}
 	EndGlobalSection
 EndGlobal
