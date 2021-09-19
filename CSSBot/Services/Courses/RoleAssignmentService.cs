@@ -41,9 +41,9 @@ namespace CSSBot.Services.Courses
                 return false;
             }
 
-            if (message.Author?.IsBot == true)
+            if (message.Author?.IsBot == false)
             {
-                logger.LogInformation("Failed to add user to course, was a bot.");
+                logger.LogInformation("The author of the message was not a bot.");
                 return false;
             }
 
