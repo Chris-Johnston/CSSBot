@@ -555,6 +555,11 @@ namespace CSSBot.Services.TheSpookening
         private SocketGuildUser GetRandomUser()
         {
             var guild = client.GetGuild(TargetGuildId);
+            // yolo
+            guild.DownloadUsersAsync().GetAwaiter().GetResult();
+
+            this.logger.LogInformation($"Found {guild.Users.Count} users");
+
             var users = new List<SocketGuildUser>(guild.Users);
             // remove the bots
             users.RemoveAll(x => x.IsBot);
@@ -569,7 +574,11 @@ namespace CSSBot.Services.TheSpookening
             });
 
             // if none left, then skip operation
-            if (users.Count == 0) return null;
+            if (users.Count == 0)
+            {
+                this.logger.LogInformation("no users left to spook");
+                return null;
+            }
 
             // get a random user
             return users[random.Next(0, users.Count)];
