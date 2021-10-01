@@ -139,13 +139,13 @@ namespace CSSBot.Services.TheSpookening
 
             logger?.LogDebug("Initialized spookening service.");
 
-            //client.Ready += async () =>
-            //{
-            //    logger.LogInformation("Downloading users in the guild");
-            //    var guild = client.GetGuild(TargetGuildId);
-            //    await guild.DownloadUsersAsync();
-            //    logger.LogInformation("Done downloading users in the guild");
-            //};
+            client.Ready += async () =>
+            {
+                logger.LogInformation("Downloading users in the guild");
+                var guild = client.GetGuild(TargetGuildId);
+                await guild.DownloadUsersAsync();
+                logger.LogInformation("Done downloading users in the guild");
+            };
         }
 
         public void DropSpookDatabase()
