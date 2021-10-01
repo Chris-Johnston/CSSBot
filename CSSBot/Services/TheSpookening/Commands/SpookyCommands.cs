@@ -153,7 +153,11 @@ namespace CSSBot.Commands
         [RequireOwner]
         public async Task ForceOnMidnight()
         {
-            spookening.OnMidnight();
+            // this is a dumpster fire
+            Task.Run(() =>
+            {
+                spookening.OnMidnight();
+            });
             await ReplyAsync("oops");
         }
 
