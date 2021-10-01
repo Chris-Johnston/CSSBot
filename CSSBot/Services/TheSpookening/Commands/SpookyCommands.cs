@@ -149,6 +149,14 @@ namespace CSSBot.Commands
             await ReplyAsync("k. existing spooks might not work sry");
         }
 
+        [Command("forcemidnight")]
+        [RequireOwner]
+        public async Task ForceOnMidnight()
+        {
+            spookening.OnMidnight();
+            await ReplyAsync("oops");
+        }
+
         [Command("HeyAdminSpookThesePeopleRightNow")]
         [RequireOwner]
         public async Task HeyAdminSpookThesePeopleRightNow(params IGuildUser[] users)

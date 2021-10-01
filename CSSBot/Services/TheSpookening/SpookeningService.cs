@@ -258,7 +258,7 @@ namespace CSSBot.Services.TheSpookening
         /// <param name="time"></param>
         /// <returns></returns>
         private bool IsTimeMidnight(TimeSpan time)
-            => time.Hours == 22 && time.Minutes == 0;
+            => time.Hours == 0 && time.Minutes == 0; // shifting time instead by changing tz on the host
 
         public void FixQueue()
         {
@@ -354,7 +354,7 @@ namespace CSSBot.Services.TheSpookening
         /// <summary>
         /// Fires on midnight each day in October
         /// </summary>
-        private void OnMidnight()
+        public void OnMidnight()
         {
             for (int i = 0; i < 2; i++)
             {
