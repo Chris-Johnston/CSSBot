@@ -564,8 +564,6 @@ namespace CSSBot.Services.TheSpookening
         private SocketGuildUser GetRandomUser()
         {
             var guild = client.GetGuild(TargetGuildId);
-            // yolo
-            guild.DownloadUsersAsync().GetAwaiter().GetResult();
 
             this.logger.LogInformation($"Found {guild.Users.Count} users");
 
