@@ -355,22 +355,27 @@ namespace CSSBot.Services.TheSpookening
         /// </summary>
         public void OnMidnight()
         {
+            this.logger.LogInformation("ON MIDNIGHT ");
             for (int i = 0; i < 2; i++)
             {
                 // get a random user
                 var user = GetRandomUser();
+
+                this.logger.LogDebug($"Spooking user {user?.Id?.ToString() ?? "NULL"}");
 
                 // if no users left, then just do nothing
                 if (user == null) return;
 
                 SpookUser(user);
             }
-            
 
+            this.logger.LogDebug($"Processing spooking");
             // process the queue of spooked people
             ProcessSpooking()
                 .GetAwaiter()
                 .GetResult();
+
+            this.logger.LogDebug($"Sending info message");
 
             Task.Factory.StartNew(async () =>
             {
