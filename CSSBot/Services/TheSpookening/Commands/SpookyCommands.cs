@@ -149,15 +149,12 @@ namespace CSSBot.Commands
             await ReplyAsync("k. existing spooks might not work sry");
         }
 
-        [Command("forcemidnight")]
+        [Command("forcemidnight", RunMode = RunMode.Async)]
         [RequireOwner]
         public async Task ForceOnMidnight()
         {
-            // this is a dumpster fire
-            Task.Run(() =>
-            {
-                spookening.OnMidnight();
-            });
+            await this.Context.Guild.DownloadUsersAsync();
+            spookening.OnMidnight();
             await ReplyAsync("oops");
         }
 

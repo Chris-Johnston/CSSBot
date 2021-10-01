@@ -361,10 +361,14 @@ namespace CSSBot.Services.TheSpookening
                 // get a random user
                 var user = GetRandomUser();
 
-                this.logger.LogDebug($"Spooking user {user?.Id?.ToString() ?? "NULL"}");
-
                 // if no users left, then just do nothing
-                if (user == null) return;
+                if (user == null)
+                {
+                    this.logger.LogWarning("could not find a random user");
+                    return;
+                }
+
+                this.logger.LogDebug($"Spooking user {user?.Id.ToString() ?? "NULL"}");
 
                 SpookUser(user);
             }
