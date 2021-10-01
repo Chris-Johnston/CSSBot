@@ -138,6 +138,14 @@ namespace CSSBot.Services.TheSpookening
             }, null, 0, PollRate);
 
             logger?.LogDebug("Initialized spookening service.");
+
+            //client.Ready += async () =>
+            //{
+            //    logger.LogInformation("Downloading users in the guild");
+            //    var guild = client.GetGuild(TargetGuildId);
+            //    await guild.DownloadUsersAsync();
+            //    logger.LogInformation("Done downloading users in the guild");
+            //};
         }
 
         public void DropSpookDatabase()
@@ -269,6 +277,12 @@ namespace CSSBot.Services.TheSpookening
             }
         }
 
+        public async Task GuildCache()
+        {
+            var guild = client.GetGuild(TargetGuildId);
+            await guild.DownloadUsersAsync();
+        }
+
         public async Task ProcessSpooking()
         {
             // process spookenings that have been issued earlier that day
@@ -359,7 +373,13 @@ namespace CSSBot.Services.TheSpookening
             for (int i = 0; i < 2; i++)
             {
                 // get a random user
-                var user = GetRandomUser();
+                var userId = GetRandomUser();
+                if (userId == null)
+                {
+                    this.logger.LogWarning("get random user was null");
+                }
+
+                var user = this.client.GetGuild(TargetGuildId).GetUser(userId.Value);
 
                 // if no users left, then just do nothing
                 if (user == null)
@@ -561,34 +581,38 @@ namespace CSSBot.Services.TheSpookening
         /// that has been spooked already.
         /// </summary>
         /// <returns></returns>
-        private SocketGuildUser GetRandomUser()
+        private ulong? GetRandomUser()
         {
-            var guild = client.GetGuild(TargetGuildId);
+            // var guild = client.GetGuild(TargetGuildId);
 
-            this.logger.LogInformation($"Found {guild.Users.Count} users");
+            var guildUsers = client.GetGuild(TargetGuildId).GetUsersAsync().FlattenAsync()
+                .GetAwaiter().GetResult()
+                .ToList();
 
-            var users = new List<SocketGuildUser>(guild.Users);
+            this.logger.LogInformation($"Found {guildUsers.Count} users");
+
+            // var users = new List<SocketGuildUser>();
             // remove the bots
-            users.RemoveAll(x => x.IsBot);
+            guildUsers.RemoveAll(x => x.IsBot);
             // remove all override users, if they are server
             // owners then they cannot be spooked anyways
-            users.RemoveAll(x => OverrideUsers.Contains(x.Id));
+            guildUsers.RemoveAll(x => OverrideUsers.Contains(x.Id));
             // remove all users who have been spooked already
             var collection = GetSpookedUserCollection;
-            users.RemoveAll(x =>
+            guildUsers.RemoveAll(x =>
             {
                 return collection.Exists(y => y.SpookedUserId == x.Id);
             });
 
             // if none left, then skip operation
-            if (users.Count == 0)
+            if (guildUsers.Count == 0)
             {
                 this.logger.LogInformation("no users left to spook");
                 return null;
             }
 
             // get a random user
-            return users[random.Next(0, users.Count)];
+            return guildUsers[random.Next(0, guildUsers.Count)].Id;
         }
 
         public void ForceSpookOverride(ulong userId, string originalNick)

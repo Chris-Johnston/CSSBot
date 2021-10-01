@@ -109,7 +109,7 @@ namespace CSSBot
 
             // starts our client
             // we use LogSeverity.Debug because more info the better
-            m_client = new DiscordSocketClient(new DiscordSocketConfig() { LogLevel = Discord.LogSeverity.Verbose });
+            m_client = new DiscordSocketClient(new DiscordSocketConfig() { LogLevel = Discord.LogSeverity.Verbose, AlwaysDownloadUsers = true });
 
             _commands = new CommandService();
             messageRetry = new MessageRetryService(m_client);

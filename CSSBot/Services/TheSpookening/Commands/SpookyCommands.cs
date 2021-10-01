@@ -153,9 +153,19 @@ namespace CSSBot.Commands
         [RequireOwner]
         public async Task ForceOnMidnight()
         {
-            await this.Context.Guild.DownloadUsersAsync();
-            spookening.OnMidnight();
-            await ReplyAsync("oops");
+            try
+            {
+                spookening.OnMidnight();
+                await ReplyAsync("oops");
+            }
+            catch (Exception e)
+            {
+                this.logger.LogError(e.ToString());
+            }
+            // await this.Context.Guild.DownloadUsersAsync();
+            // this.logger.LogInformation("getting cache");
+            // await spookening.GuildCache();
+            // this.logger.LogInformation("done get cache");
         }
 
         [Command("HeyAdminSpookThesePeopleRightNow")]
