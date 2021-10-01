@@ -83,6 +83,8 @@ namespace CSSBot.Services.TheSpookening
             this.database = database;
             this.logger = logger;
 
+            logger.LogWarning("config file path is null, not doing spooky stuff");
+
             // hack: too lazy to set up a json when testing
             if (configFilePath == null) return;
 
