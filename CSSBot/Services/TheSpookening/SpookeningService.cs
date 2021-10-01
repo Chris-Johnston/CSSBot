@@ -83,15 +83,12 @@ namespace CSSBot.Services.TheSpookening
             this.database = database;
             this.logger = logger;
 
-            logger.LogWarning("config file path is null, not doing spooky stuff");
-
-            // hack: too lazy to set up a json when testing
-            if (configFilePath == null) return;
-
             if (string.IsNullOrWhiteSpace(configFilePath))
                 throw new ArgumentNullException(nameof(configFilePath), "Config file path must be specified.");
             if (!File.Exists(configFilePath))
                 throw new ArgumentException("Config file path was not found.");
+
+            logger.LogDebug("Setting up spooky service");
 
             // let json deserialize throw any errors it encounters
             var fileContent = File.ReadAllText(configFilePath);
