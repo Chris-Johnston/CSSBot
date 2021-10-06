@@ -465,7 +465,7 @@ namespace CSSBot.Services.TheSpookening
             //    $"\n{user.Mention} can now spook up to **{SpookUserLimit}** other people with `?spook @User`.";
             // 2021 do not update nicknames
             var message =
-                $"Uh-oh! {user.Mention} has been spooked! AHH! {user.Mention} can not spook up to **{SpookUserLimit}** other people with `?spook @User`.";
+                $"Uh-oh! {user.Mention} has been spooked! AHH! {user.Mention} can now spook up to **{SpookUserLimit}** other people with `?spook @User`.";
 
             // don't care how bad this code is
             var _ = Task.Factory.StartNew(async () =>
@@ -510,7 +510,7 @@ namespace CSSBot.Services.TheSpookening
             //    $"Uh-oh! **{safeOriginalName}** has been spooked by **{by.Mention}** and is now **{safeNewName}**! Yikes!\n" +
             //    $"\n{user.Mention} can now spook up to **{SpookUserLimit}** other people with `?spook @User`.";
             var message =
-                $"Uh-oh! {user.Mention} has ben spooked by {by.Mention}! Yikes!";
+                $"Uh-oh! {user.Mention} has been spooked by {by.Mention}! Yikes!";
 
             // don't care
             var _ = Task.Factory.StartNew(async () =>
