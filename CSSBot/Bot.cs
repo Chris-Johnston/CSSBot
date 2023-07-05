@@ -4,16 +4,12 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using CSSBot.Reminders;
 using Discord.Commands;
 using System.Reflection;
-using CSSBot.Counters;
 using CSSBot.Models;
 using LiteDB;
 using CSSBot.Tags;
-using CSSBot.Services.TheSpookening;
 using CSSBot.Services;
-using CSSBot.Services.Courses;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
@@ -124,13 +120,9 @@ namespace CSSBot
                 .AddSingleton(_commands)
                 .AddSingleton(_database)
                 .AddSingleton(logger)
-                .AddSingleton(new CounterService(_database, m_client))
-                .AddSingleton(new ReminderService(m_client, _database))
                 .AddSingleton(new TagService(_database))
-                .AddSingleton(new SpookeningService(m_client, _database, Program.GlobalConfiguration.Data.SpookyConfigJson, logger))
                 .AddSingleton(messageRetry)
                 .AddSingleton(new MinesweeperSolutionService())
-                .AddSingleton(new CourseService(m_client, logger))
                 .BuildServiceProvider();
 
             await InstallCommandsAsync();
